@@ -6,9 +6,9 @@ Purpose    : type_traits for skynet lib
 
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 #include <type_traits>
-#include <boost\mpl\if.hpp>
+#include <boost/mpl/if.hpp>
 
 namespace skynet{
 

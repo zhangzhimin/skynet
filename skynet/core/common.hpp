@@ -6,7 +6,7 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\utility\tag.hpp>
+#include <skynet/utility/tag.hpp>
 
 #pragma warning(disable : 4018)
 #pragma warning(disable : 4244)
@@ -65,7 +65,7 @@ namespace skynet {
 	}
 
 
-	template <typename size_t dim_>
+	template <size_t dim_>
 	struct set_boundary_imp;
 
 	template <>
@@ -73,7 +73,7 @@ namespace skynet {
 		template <typename M>
 		static void do_it(M &mat, const typename M::value_type &value, const size_t thickness = 1){
 			auto size = mat.extent();
-			ASSERT(size[i] >= thickness, "the thickness is more than size");
+		//	ASSERT( >= thickness, "the thickness is more than size");
 
 			for (int t = 0; t < thickness; ++t){
 				for (int i = 0; i < size[1]; ++i){

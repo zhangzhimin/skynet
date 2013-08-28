@@ -23,13 +23,13 @@
 
 
 //The skynet lib depended on the boost lib.just the serialization static_lib is needed.
-#include <boost\config.hpp>
+#include <boost/config.hpp>
 
 
-#include <boost\throw_exception.hpp>
-#include <boost\exception\diagnostic_information.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 
-#include <boost\shared_array.hpp>
+#include <boost/shared_array.hpp>
 //#include <boost\assign.hpp>
 
 //using namespace boost::assign;
@@ -138,11 +138,14 @@ using std::is_floating_point;
 namespace skynet{
 	class assert_failed : public std::exception{
 	public:
-		assert_failed(const char *info) : std::exception(info) {
+		assert_failed(string info) : std::exception(), _info(info) {
 #ifdef _CONSOLE
 			std::cout << "Assert failed: " << info << std::endl;
 #endif // _CONSOLE
 		}
+
+	private:
+		string _info;
 	};
 }
 

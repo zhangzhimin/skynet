@@ -6,8 +6,8 @@ Purpose    :
 
 #pragma once
 
-#include <boost\iterator\iterator_adaptor.hpp>
-#include <skynet\utility\type_traits.hpp>
+#include <boost/iterator/iterator_adaptor.hpp>
+#include <skynet/utility/type_traits.hpp>
 
 
 namespace skynet{
@@ -23,7 +23,10 @@ namespace skynet{
 												typename index_type_::reference>::type>
 	{
 	public:
-		typedef index_type_	    index_type;
+		typedef index_type_	   							 index_type;
+		typedef typename index_type::reference			reference;
+		typedef typename index_type::const_reference 	const_reference;
+		typedef ptrdiff_t								difference_type;
 
         index_iterator() : _index(nullptr), _pos(0){}
 		index_iterator(index_type *p_n, const int &pos) : _index(p_n), _pos(pos){	}
@@ -38,8 +41,8 @@ namespace skynet{
 
 	private:
 		friend class boost::iterator_core_access;
-		reference dereference() const							{ return (*_index)[_pos]; }
-        reference dereference()                                 { return (*_index)[_pos]; }
+		const_reference dereference() const								{ return (*_index)[_pos]; }
+        reference dereference()                                			    { return (*_index)[_pos]; }
 		void increment()										{++_pos; }
 		void decrement()										{--_pos; }
 

@@ -5,19 +5,13 @@ Purpose    : implements point
 ********************************************************************************/
 #pragma once
 
-#include <array>
-#include <numeric>
-#include <type_traits>
-
-#include <skynet\config.hpp>
-#include <skynet\core\common.hpp>
-#include <skynet\utility\iterator_facade.hpp>
-#include <skynet\utility\type_traits.hpp>
+#include <skynet/utility/iterator_facade.hpp>
+#include <skynet/utility/type_traits.hpp>
 
 namespace skynet{
 
 	///mutil-dim point. the clas is not used now, but it support the above 4D point.
-	template <typename T,typename size_t dim_>
+	template <typename T, size_t dim_>
 	class point{
 	public:
 		typedef point												type;
@@ -26,7 +20,7 @@ namespace skynet{
 		typedef value_type &										reference;
 		typedef const value_type &									const_reference;
 		typedef typename std::array<value_type, dim>::iterator      iterator;
-		typedef const iterator										const_iterator;					
+		typedef typename std::array<value_type, dim>::const_iterator		const_iterator;					
 
 		point()	{}
 
@@ -62,10 +56,10 @@ namespace skynet{
 		std::array<T, dim> _array;
 	};
 
-	template <typename T, typename size_t dim>
+	template <typename T, size_t dim>
 	const point<T, dim> point<T,dim>::zero = point<T, dim>(0);
 
-	template <typename T, typename size_t dim>
+	template <typename T, size_t dim>
 	const point<T, dim> point<T,dim>::unit = point<T, dim>(1);
 
 
@@ -203,8 +197,8 @@ namespace skynet{
 
 
 #pragma region operation(+,-...)
-	template <typename T, typename size_t D>
-	bool operator==(const typename point<T, D> &lhs, const typename point<T, D> &rhs){
+	template <typename T, size_t D>
+	bool operator==(const point<T, D> &lhs, const point<T, D> &rhs){
 		for (int i = 0; i < D; ++i){
 			if (lhs[i] != rhs[i])	return false;
 		}
@@ -212,7 +206,7 @@ namespace skynet{
 		return true;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	bool operator!=(const point<T, D> &lhs, const point<T, D> &rhs){		
 		for (int i = 0; i < D; ++i){
 			if (lhs[i] == rhs[i]) return true;
@@ -221,7 +215,7 @@ namespace skynet{
 		return false;
 	}	
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator-(const point<T, D> &lhs, const point<T, D> &rhs){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -231,14 +225,14 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator-=(point<T, D> &lhs, const point<T, D> &rhs){
 		for (int i = 0; i < D; ++i){
 			lhs[i] -= rhs[i];
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator+(const point<T, D> &lhs, const point<T, D> &rhs){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -248,14 +242,14 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator+=(point<T, D> &lhs, const point<T, D> &rhs){		
 		for (int i = 0; i < D; ++i){
 			lhs[i] += rhs[i];
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator-(const point<T, D> &p){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -265,7 +259,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator*(const point<T, D> &lhs, const point<T, D> &rhs){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -275,21 +269,21 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator*=(point<T, D> &lhs, const point<T, D> &rhs){
 		for (int i = 0; i < D; ++i){
 			lhs[i] *= rhs[i];
 		}
 	}
 		
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator*=(point<T, D> &lhs, const T &scale){
 		for (int i = 0; i <D; ++i){
 			lhs[i] *= scale;
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator*(typename point<T,D>::value_type scale, const point<T, D> &rhs){		
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -299,7 +293,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator/(const point<T, D> &lhs, const point<T, D> &rhs){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -309,14 +303,14 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator/=(point<T, D> &lhs, const point<T, D> &rhs){
 		for (int i = 0; i < D; ++i){
 			lhs[i] /= rhs[i];
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator/(const point<T, D> &p, const double &scale){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -325,14 +319,14 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator/=(point<T, D> &point, const double &scale){
 		for (int i = 0; i < D; ++i){
 			point[i] /= scale;
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator%(const point<T, D> &p1, const point<T, D> &p2){
 		point<T, D> re;
 		for (size_t i = 0; i < D; ++i){
@@ -342,14 +336,14 @@ namespace skynet{
 		return re;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void operator%=(point<T, D> &p1, const point<T, D> &p2){
 		for (size_t i = 0; i < D; ++i){
 			p1[i] %= p2[i];
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator>>(const point<T, D> &p, const size_t &shift){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -359,7 +353,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> operator<<(const point<T, D> &p, const size_t &shift){
 		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -369,7 +363,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	std::ostream &operator<<(std::ostream &stream, const point<T, D> &point){
 		stream <<"(";
 		for (int i = 0; i < D; ++i){
@@ -378,17 +372,17 @@ namespace skynet{
 		return stream <<")";
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> abs(const point<T, D> &p){
 		point <T, D> temp;
-		for (i = 0; i < D; ++i){
+		for (size_t i = 0; i < D; ++i){
 			temp[i] = std::abs(p[i]);
 		}
 
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<int, D> nearest_neighbor(const point<T, D> &p){
 		point<int, D> temp;
 		for (int i = 0; i < D; ++i){
@@ -397,7 +391,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename size_t D>
+	template <size_t D>
 	point<int, D> nearest_neighbor(const point<int, D> &p){
 		return p;
 	}
@@ -410,7 +404,7 @@ namespace skynet{
 	class max_nor_tag{};
 	class min_nor_tag{};
 		
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	T norm(const point<T, D> &p, const Euclidean_tag &){
 		T temp = 0;
 		for (int i = 0; i < D; ++i){
@@ -421,7 +415,7 @@ namespace skynet{
 	}
 
 	
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	T norm(const point<T, D> &p, const street_tag &){
 		T temp = 0;
 		for (int i = 0; i < D; ++i){
@@ -431,12 +425,12 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	T norm(const point<T, D> &p){
 		return norm(p, Euclidean_tag());
 	}
 
-	template <typename T, typename size_t D, typename distance_tag>
+	template <typename T, size_t D, typename distance_tag>
 	T distance(const point<T, D> &lhs, const point<T, D> &rhs, const distance_tag &){
 		return norm(lhs - rhs, distance_tag());
 	}
@@ -447,12 +441,12 @@ namespace skynet{
 			return std::abs(lhs-rhs);
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	T distance(const point<T, D> &lhs, const point<T, D> &rhs){
 		return distance(lhs, rhs, Euclidean_tag());
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	point<T, D> center_point(const point<T, D> &fir, const point<T, D> &sec){
 		point<T, D> center;
 		for (int i = 0; i < D; ++i){
@@ -461,7 +455,7 @@ namespace skynet{
 		return center;
 	}
 
-	template <typename size_t D>
+	template <size_t D>
 	point<float, D> normalize(const point<float, D>  &p){
 		auto n = norm(p) + std::numeric_limits<float>::epsilon();
 
@@ -473,7 +467,7 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename size_t D>
+	template <size_t D>
 	point<double, D> normalize(const point<double, D>  &p){
 		auto n = norm(p) + std::numeric_limits<double>::epsilon();
 
@@ -485,7 +479,7 @@ namespace skynet{
 		return temp;
 	}
 	
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	T product(const point<T, D> &lhs, const point<T, D> &rhs){
 		T temp = 0;
 		for (size_t i = 0; i < D; ++i){
@@ -526,7 +520,7 @@ namespace skynet{
 		return static_cast<size_t>(std::accumulate(extent.begin(), extent.end(), int(1), std::multiplies<int>()));
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	inline size_t whole_size(const point<T, D> &p){
 		return std::accumulate(p.begin(), p.end(), size_t(1), multiplies<T>());
 	}
