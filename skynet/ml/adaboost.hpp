@@ -28,8 +28,8 @@ THE SOFTWARE.
 #include <algorithm>
 #include <random>
 
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\ml\utility.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/ml/utility.hpp>
 
 
 namespace skynet{namespace ml{

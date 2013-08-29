@@ -6,7 +6,7 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{
 	template <typename Pred>

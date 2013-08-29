@@ -25,9 +25,9 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\numeric\common.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/numeric/common.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/utility/math.hpp>
 
 namespace skynet{namespace numeric{
 

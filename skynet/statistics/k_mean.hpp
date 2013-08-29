@@ -6,8 +6,8 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\core\point.hpp>
+#include <skynet/config.hpp>
+#include <skynet/core/point.hpp>
 #include <random>
 
 namespace skynet{ namespace statistics{

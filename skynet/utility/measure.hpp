@@ -6,7 +6,7 @@ Purpose    : define some physical measurement unit to measure the real image siz
 
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{namespace measure{
 

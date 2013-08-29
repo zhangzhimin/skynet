@@ -5,23 +5,23 @@
 ///Eigen是一个数值分析库（仅数值分析功能）， 因为时间有限，和具备一定难度， 所以我没有构建自己的数值分析库
 ///
 ///
-#include <skynet\core\point.hpp>
-#include <skynet\core\array.hpp>
-#include <skynet\core\io.hpp>
-#include <skynet\core\shared_buffer.hpp>
-#include <skynet\cv\pixel.hpp>
-#include <skynet\cv\field.hpp>
-#include <skynet\cv\spatial_based.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\utility\serialization.hpp>
-#include <skynet\geometry\contour.hpp>
-#include <skynet\statistics\pca.hpp>
-#include <skynet\statistics\distribution.hpp>
-#include <skynet\statistics\missing_data.hpp>
-#include <skynet\statistics\metric.hpp>
+#include <skynet/core/point.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/core/io.hpp>
+#include <skynet/core/shared_buffer.hpp>
+#include <skynet/cv/pixel.hpp>
+#include <skynet/cv/field.hpp>
+#include <skynet/cv/spatial_based.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/utility/serialization.hpp>
+#include <skynet/geometry/contour.hpp>
+#include <skynet/statistics/pca.hpp>
+#include <skynet/statistics/distribution.hpp>
+#include <skynet/statistics/missing_data.hpp>
+#include <skynet/statistics/metric.hpp>
 
-#include <Eigen\Core>
-#include <Eigen\SVD>
+#include <Eigen/Core>
+#include <Eigen/SVD>
 
 #include <filesystem>
 #include <random>

@@ -7,10 +7,10 @@ Purpose    :
 #pragma once
 
 
-#include <skynet\utility\math.hpp>
-#include <skynet\core\lazy_evaluation.hpp>
-#include <skynet\cv\field.hpp>
-#include <skynet\utility\std_expand.hpp>
+#include <skynet/utility/math.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
+#include <skynet/cv/field.hpp>
+#include <skynet/utility/std_expand.hpp>
 
 
 //#include <queue>

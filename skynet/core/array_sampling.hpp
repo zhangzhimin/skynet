@@ -1,7 +1,7 @@
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\utility\iterator_facade.hpp>
+#include <skynet/config.hpp>
+#include <skynet/utility/iterator_facade.hpp>
 
 #include <type_traits>
 

@@ -1,6 +1,6 @@
-#include <skynet\core\array.hpp>
-#include <skynet\cv\pixel.hpp>
-#include <skynet\core\lazy_evaluation.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/cv/pixel.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
 
 namespace skynet{namespace cv{
 

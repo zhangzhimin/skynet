@@ -9,11 +9,11 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\cv\pixel.hpp>
-#include <skynet\utility\exception.hpp>
-#include <skynet\utility\track.hpp>
-#include <skynet\cv\lut.hpp>
-#include <skynet\utility\serialization.hpp>
+#include <skynet/cv/pixel.hpp>
+#include <skynet/utility/exception.hpp>
+#include <skynet/utility/track.hpp>
+#include <skynet/cv/lut.hpp>
+#include <skynet/utility/serialization.hpp>
 
 #include <fstream>
 //const char *PALETTE_DIR_PATH;

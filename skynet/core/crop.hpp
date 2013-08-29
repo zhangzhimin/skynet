@@ -1,4 +1,4 @@
-/*=============================================================================
+*=============================================================================
 The MIT License (MIT)
 
 Copyright @ 2013 by Zhang Zhimin 
@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\core\array.hpp>
+#include <skynet/core/array.hpp>
 
 
 namespace skynet{

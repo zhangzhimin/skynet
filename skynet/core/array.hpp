@@ -1,21 +1,21 @@
 /******************************************************************************
 Created By : Zhang Zhimin
-Created On : 2012/9/6
+Created On : 20129/6
 Purpose    : Implements the std::array
 ********************************************************************************/
 #pragma once
 
-#include <skynet\core\point.hpp>
-#include <skynet\core\array_express.hpp>
-#include <skynet\core\shared_buffer.hpp>
-#include <skynet\core\common.hpp>
-#include <skynet\utility\algorithm.hpp>
+#include <skynet/core/point.hpp>
+#include <skynet/core/array_express.hpp>
+#include <skynet/core/shared_buffer.hpp>
+#include <skynet/core/common.hpp>
+#include <skynet/utility/algorithm.hpp>
 
 #include <unordered_map>
 
 namespace skynet{
 
-	//
+	/
 	template <typename T, typename size_t D, typename B = shared_buffer<T>>
 	class multi_array: array_express<multi_array<T, D, B>>{
 	public:
@@ -174,7 +174,7 @@ namespace skynet{
 				return (mref_value&bit_mask) == bit_mask;
 			}
 
-			// bit &operator=(
+			 bit &operator=(
 
 			bit &operator=(const bool &b){
 				static_assert(!std::is_const<Ref>::value, "the operator= is just for non const.");

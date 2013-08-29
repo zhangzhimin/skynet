@@ -1,4 +1,4 @@
-/******************************************************************************
+******************************************************************************
 Created By : Zhang Zhimin
 Created On : 2012/11/21
 Purpose    :  
@@ -6,11 +6,11 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\core\array.hpp>
-#include <skynet\core\neighbor.hpp>
-#include <skynet\utility\iterator_facade.hpp>
-#include <skynet\utility\math.hpp>
-#include <skynet\utility\parse.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/core/neighbor.hpp>
+#include <skynet/utility/iterator_facade.hpp>
+#include <skynet/utility/math.hpp>
+#include <skynet/utility/parse.hpp>
 
 namespace skynet{
 

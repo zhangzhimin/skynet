@@ -1,6 +1,6 @@
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{ namespace statistics{
 

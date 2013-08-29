@@ -6,13 +6,13 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\utility\math.hpp>
-#include <skynet\utility\serialization.hpp>
-#include <skynet\utility\eigen_lib.hpp>
+#include <skynet/config.hpp>
+#include <skynet/utility/math.hpp>
+#include <skynet/utility/serialization.hpp>
+#include <skynet/utility/eigen_lib.hpp>
 
-#include <Eigen\Core>
-#include <Eigen\LU>
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 namespace skynet{namespace statistics{
 

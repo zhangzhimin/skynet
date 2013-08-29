@@ -1,12 +1,12 @@
 #pragma once
 
-#include <skynet\core\point.hpp>
-#include <skynet\core\detail.hpp>
-#include <skynet\core\neighbor.hpp>
-#include <skynet\core\lazy_evaluation.hpp>
-#include <skynet\geometry\region.hpp>
-#include <skynet\utility\tag.hpp>
-#include <skynet\utility\cycle_num.hpp>
+#include <skynet/core/point.hpp>
+#include <skynet/core/detail.hpp>
+#include <skynet/core/neighbor.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
+#include <skynet/geometry/region.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/utility/cycle_num.hpp>
 
 #include <exception>
 #include <functional>

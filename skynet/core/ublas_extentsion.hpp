@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\ublas.hpp>
-#include <skynet\core\array.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/core/array.hpp>
 
 namespace boost{namespace numeric{namespace ublas{
 

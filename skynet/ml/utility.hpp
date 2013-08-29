@@ -1,9 +1,9 @@
 #pragma once
 
-#include <skynet\ublas.hpp>
-#include <skynet\utility\tag.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/utility/math.hpp>
 
 #include <random>
 

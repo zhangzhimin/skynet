@@ -1,15 +1,15 @@
-/******************************************************************************
+******************************************************************************
 Created By : Zhang Zhimin
-Created On : 2012/9/11
+Created On : 2012911
 Purpose    : 
-********************************************************************************/
+********************************************************************************
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{
 
-	//this class help std::array implement std::array operation.
+	this class help std::array implement std::array operation.
 	template <typename array_type_>
 	class array_express{
 	public:

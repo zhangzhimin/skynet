@@ -23,10 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 =============================================================================*/
 
-#include <skynet\ublas.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\numeric\linear_ algebra.hpp>
-#include <skynet\utility\tag.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/numeric/linear_ algebra.hpp>
+#include <skynet/utility/tag.hpp>
 
 namespace skynet{namespace numeric{
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <skynet\ublas.hpp>
-#include <skynet\utility\algorithm.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/utility/algorithm.hpp>
 
-#include <boost\numeric\ublas\symmetric.hpp>
-#include <boost\numeric\ublas\banded.hpp>
+#include <boost/numeric/ublas/symmetric.hpp>
+#include <boost/numeric/ublas/banded.hpp>
 
 #include <random>
 #include <type_traits>

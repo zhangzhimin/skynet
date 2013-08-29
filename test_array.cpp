@@ -8,9 +8,9 @@
 
 int main(){
 	std::array<int,3> a;
-//	skynet::point<int,2> p(3,3);	
+	skynet::point<int,2> p(3,3);	
 
-//	std::cout << p[0] << "," << p[1] << std::endl;
+	std::cout << p[0] << "," << p[1] << std::endl;
 
 	return 0;
 }

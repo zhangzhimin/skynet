@@ -1,7 +1,7 @@
 #pragma once
 
-#include <skynet\core\conv.hpp>
-#include <skynet\cv\extension\image.hpp>
+#include <skynet/core/conv.hpp>
+#include <skynet/cv/extension/image.hpp>
 
 namespace skynet{namespace cv{
 

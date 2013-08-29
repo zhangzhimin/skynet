@@ -1,11 +1,11 @@
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\ublas.hpp>
-#include <skynet\utility\tag.hpp>
+#include <skynet/config.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/utility/tag.hpp>
 
 
-#include <Eigen\Core>
+#include <Eigen/Core>
 
 namespace skynet{namespace statistics{
 

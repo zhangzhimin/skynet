@@ -1,10 +1,10 @@
 #pragma once
 
-#include <skynet\utility\tag.hpp>
-#include <skynet\ublas.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/ublas.hpp>
 
 #include <random>
-#include <boost\numeric\ublas\symmetric.hpp>
+#include <boost/numeric/ublas/symmetric.hpp>
 
 namespace skynet{namespace nn{
 

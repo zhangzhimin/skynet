@@ -1,4 +1,4 @@
-/******************************************************************************
+******************************************************************************
 Created By : Zhang Zhimin
 Created On : 2012/12/24
 Purpose    :  
@@ -6,7 +6,7 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\core\lazy_evaluation.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
 
 namespace skynet{ 
     template <typename M>

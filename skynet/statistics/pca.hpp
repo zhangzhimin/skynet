@@ -1,9 +1,9 @@
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
-#include <Eigen\SVD>
-#include <Eigen\Core>
+#include <Eigen/SVD>
+#include <Eigen/Core>
 
 namespace skynet{ namespace statistics{
 	

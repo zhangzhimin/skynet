@@ -29,10 +29,10 @@ THE SOFTWARE.
 #include <forward_list>
 #include <numeric>
 
-#include <skynet\core\array.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\core\common.hpp>
-#include <skynet\utility\std_expand.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/core/common.hpp>
+#include <skynet/utility/std_expand.hpp>
 
 
 #pragma message("using the forward_list take place of the list")

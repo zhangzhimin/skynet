@@ -26,10 +26,10 @@ THE SOFTWARE.
 #pragma once
 
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
-#include <skynet\core\function.hpp>
-#include <skynet\ml\utility.hpp>
+#include <skynet/core/function.hpp>
+#include <skynet/ml/utility.hpp>
 
 namespace skynet{namespace ml{
 

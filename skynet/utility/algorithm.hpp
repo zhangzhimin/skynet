@@ -5,9 +5,9 @@ Purpose    :
 ********************************************************************************/
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\utility\type_traits.hpp>
-#include <skynet\core\array_express.hpp>
+#include <skynet/config.hpp>
+#include <skynet/utility/type_traits.hpp>
+#include <skynet/core/array_express.hpp>
 
 
 namespace skynet{

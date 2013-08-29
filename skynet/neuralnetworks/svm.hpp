@@ -1,10 +1,10 @@
 #pragma once
 
-#include <skynet\ml\utility.hpp>
-#include <skynet\utility\tag.hpp>
-#include <skynet\neuralnetworks\kenel_function.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/ml/utility.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/neuralnetworks/kenel_function.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/utility/math.hpp>
 
 namespace skynet{namespace nn{
 

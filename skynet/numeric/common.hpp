@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\ublas.hpp>
+#include <skynet/ublas.hpp>
 
 namespace skynet{namespace numeric{
 

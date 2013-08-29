@@ -1,17 +1,17 @@
 
 
-/******************************************************************************
+******************************************************************************
 Created By : Zhang Zhimin
-Created On : 2012/9/19
+Created On : 2012919
 Purpose    : Implement the mul-d conv
 ********************************************************************************/
 
 #pragma once
 
-#include <skynet\core\mask.hpp>
-#include <skynet\core\lazy_evaluation.hpp>
-#include <skynet\utility\type_traits.hpp>
-#include <skynet\core\point.hpp>
+#include <skynet/core/mask.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
+#include <skynet/utility/type_traits.hpp>
+#include <skynet/core/point.hpp>
 
 #include <algorithm>
 #include <functional>

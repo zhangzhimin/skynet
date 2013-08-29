@@ -24,10 +24,10 @@ THE SOFTWARE.
 =============================================================================*/
 #pragma once
 
-#include <boost\algorithm\string.hpp>
-#include <boost\lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{
 

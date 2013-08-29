@@ -1,4 +1,4 @@
-/******************************************************************************
+******************************************************************************
 Created By : Zhang Zhimin
 Created On : 2012/9/18
 Purpose    : implemte the lazy caculate
@@ -6,9 +6,9 @@ Purpose    : implemte the lazy caculate
 
 #pragma once
 
-#include <skynet\core\array.hpp>
-#include <skynet\utility\type_traits.hpp>
-#include <skynet\utility\iterator_facade.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/utility/type_traits.hpp>
+#include <skynet/utility/iterator_facade.hpp>
 
 #pragma message("The std::function<T>  has the performance problem, if neccessary, refector it")
 

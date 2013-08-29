@@ -25,10 +25,10 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\utility\exception.hpp>
-#include <skynet\utility\tag.hpp>
-#include <skynet\utility\serialization.hpp>
+#include <skynet/config.hpp>
+#include <skynet/utility/exception.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/utility/serialization.hpp>
 
 namespace skynet{ namespace cv{
 	namespace detail{

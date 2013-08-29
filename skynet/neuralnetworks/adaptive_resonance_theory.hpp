@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet\ublas.hpp>
-#include <skynet\utility\algorithm.hpp>
+#include <skynet/ublas.hpp>
+#include <skynet/utility/algorithm.hpp>
 
 namespace skynet{namespace nn{
 

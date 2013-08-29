@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <skynet\core\array.hpp>
-#include <skynet\utility\exception.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/utility/exception.hpp>
 
 namespace skynet{
 	

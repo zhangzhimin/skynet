@@ -27,13 +27,13 @@ THE SOFTWARE.
 
 #include <vector>
 
-#include <skynet\ml\utility.hpp>
-#include <skynet\core\function.hpp>
-#include <skynet\utility\exception.hpp>
-#include <skynet\utility\tag.hpp>
-#include <skynet\numeric\gradient_descent.hpp>
+#include <skynet/ml/utility.hpp>
+#include <skynet/core/function.hpp>
+#include <skynet/utility/exception.hpp>
+#include <skynet/utility/tag.hpp>
+#include <skynet/numeric/gradient_descent.hpp>
 
-#include <boost\math\special_functions\log1p.hpp>
+#include <boost/math/special_functions/log1p.hpp>
 
 namespace skynet{namespace nn{
 

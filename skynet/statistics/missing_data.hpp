@@ -1,8 +1,8 @@
 #pragma once
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
-#include <Eigen\Core>
+#include <Eigen/Core>
 
 namespace skynet{namespace statistics{
 	namespace detail{

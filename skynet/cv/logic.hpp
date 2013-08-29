@@ -6,7 +6,7 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\core\lazy_evaluation.hpp>
+#include <skynet/core/lazy_evaluation.hpp>
 
 namespace skynet{ namespace cv{
 

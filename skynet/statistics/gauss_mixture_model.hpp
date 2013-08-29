@@ -6,11 +6,11 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\statistics\k_mean.hpp>
-#include <skynet\core\matrix.hpp>
+#include <skynet/statistics/k_mean.hpp>
+#include <skynet/core/matrix.hpp>
 
 
-#include <skynet\utility\serialization.hpp>
+#include <skynet/utility/serialization.hpp>
 
 namespace skynet{ namespace statistics{
 

@@ -6,10 +6,10 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\core\logic.hpp>
+#include <skynet/core/logic.hpp>
 
-#include <skynet\utility\cycle_num.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/utility/cycle_num.hpp>
+#include <skynet/utility/math.hpp>
 
 
 namespace skynet{namespace geometry{

@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <filesystem>
 
-#include <skynet\config.hpp>
+#include <skynet/config.hpp>
 
 namespace skynet{
 

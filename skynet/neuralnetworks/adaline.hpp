@@ -1,8 +1,8 @@
 #pragma once
 
-#include <skynet\ml\utility.hpp>
-#include <skynet\utility\algorithm.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/ml/utility.hpp>
+#include <skynet/utility/algorithm.hpp>
+#include <skynet/utility/math.hpp>
 
 #include <random>
 

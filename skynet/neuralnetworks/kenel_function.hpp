@@ -1,7 +1,7 @@
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\ublas.hpp>
+#include <skynet/config.hpp>
+#include <skynet/ublas.hpp>
 
 namespace skynet{namespace nn{
 

@@ -6,11 +6,11 @@ Purpose    :
 
 #pragma once
 
-#include <skynet\core\detail.hpp>
-#include <skynet\geometry\region.hpp>
-#include <skynet\core\multi_array.hpp>
-#include <skynet\core\neighbor.hpp>
-#include <skynet\utility\math.hpp>
+#include <skynet/core/detail.hpp>
+#include <skynet/geometry/region.hpp>
+#include <skynet/core/multi_array.hpp>
+#include <skynet/core/neighbor.hpp>
+#include <skynet/utility/math.hpp>
 
 
 #pragma message("the region grow is 4-n and 6-n.")

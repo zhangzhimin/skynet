@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <skynet\core\matrix.hpp>
-#include <skynet\core\neighbor.hpp>
-#include <skynet\utility\iterator_facade.hpp>
+#include <skynet/core/matrix.hpp>
+#include <skynet/core/neighbor.hpp>
+#include <skynet/utility/iterator_facade.hpp>
 
 #include <algorithm>
 #include <array>

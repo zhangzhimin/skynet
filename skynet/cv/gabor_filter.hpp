@@ -1,6 +1,6 @@
 #pragma once
 
-#include <skynet\core\conv.hpp>
+#include <skynet/core/conv.hpp>
 
 namespace skynet{namespace cv{
 
