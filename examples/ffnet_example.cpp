@@ -5,6 +5,7 @@
 
 using namespace skynet;
 using namespace skynet::nn;
+using namespace skynet::numeric;
 
 int main()
 {
@@ -28,36 +29,15 @@ int main()
 		column(data.targets, i+100)[1] = 0;
 		column(data.targets, i+100)[2] = 1;
 	}
-	/*ml::database2<double, int> data;
-	data.patterns = ublas::matrix<double>(2, 4);
-	data.targets = ublas::zero_matrix<int>(2, 4);
-	data.patterns(0, 0) = -1;
-	data.patterns(1, 0) = -1;
-	data.patterns(0, 1) = -1;
-	data.patterns(1, 1) = 1;
-	data.patterns(0, 2) = 1;
-	data.patterns(1, 2) = 1;
-	data.patterns(0, 3) = 1;
-	data.patterns(1, 3) = -1;
-	data.targets(0, 0) = 1;
-	data.targets(1, 0) = 0;
-	data.targets(0, 1) = 0;
-	data.targets(1, 1) = 1;
-	data.targets(0, 2) = 1;
-	data.targets(1, 2) = 0;
-	data.targets(0, 3) = 0;
-	data.targets(1, 3) = 1;*/
+	
+	ffnet net(4, 3);
+	net.add_layer(make_shared<ffnet::layer<>>(5));
+	net.add_layer(make_shared<ffnet::layer<>>(3));
 
+	optimizer_adaptor<rprop<ffnet>> opt(make_shared<ffnet>(net));
 
-	ffnet<> net(4, 3);
-	//shared_ptr<ffnet::layer_base> hidden_layer(new ffnet::layer<>(10));
-	//shared_ptr<ffnet::layer_base> hidden_layer2(new ffnet::layer<>(20));
-	//auto layer2 = new ffnet::layer<>(2);
-	//shared_ptr<ffnet::layer_base> out_layer(layer2);
-	net.add_layer(make_shared<ffnet<>::layer<>>(5));
-	net.add_layer(make_shared<ffnet<>::layer<>>(3));
 	net.epoch_num(500);
-	net.train(data); 
+	net.train(data, opt); 
 
 	for (size_t i = 0; i < data.patterns.size2(); ++i){
 		std::cout << i <<": " << net(column(data.patterns, i)) << std::endl;

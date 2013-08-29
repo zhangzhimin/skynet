@@ -41,5 +41,27 @@ namespace skynet{namespace numeric{
 		virtual void update(const vector &delta_w) = 0;
 	};
 
+	
+	///\brief The interface of the optimizer.
+	class optimizer{
+	public:
+		virtual void step() = 0;
+	};
+
+	///\brief	The adaptor of the optimizer
+	template <typename Opt>
+	class optimizer_adaptor: public optimizer, public Opt{
+	public:
+		typedef Opt							optimizer;
+		typedef typename optimizer::model	model;
+		
+		///\brief Constructs by the model
+		optimizer_adaptor(shared_ptr<model> sp_model) : Opt(sp_model){}
+
+
+		virtual void step(){
+			Opt::step();
+		}
+	};
 
 }}

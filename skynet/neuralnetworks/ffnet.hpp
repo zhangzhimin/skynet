@@ -24,28 +24,22 @@ THE SOFTWARE.
 
 #pragma once
 
-
-#include <vector>
-
 #include <skynet/ml/utility.hpp>
 #include <skynet/core/function.hpp>
 #include <skynet/utility/exception.hpp>
 #include <skynet/utility/tag.hpp>
 #include <skynet/numeric/gradient_descent.hpp>
 
-#include <boost/math/special_functions/log1p.hpp>
 
 namespace skynet{namespace nn{
-	using namespace numeric::model;
-	using namespace numeric::rprop;
-	using namespace numeric::bgfs;
+	using numeric::model;
+	using numeric::rprop;
+	using numeric::optimizer;	
 
-	template <typename Optimizer = numeric::rprop<numeric::model<>>>
+	///\brief	Implements the 
 	class ffnet: public model<>{
 	public:
 		typedef ffnet											self;
-
-		typedef numeric::rprop<numeric::model<>>			optimizer;
 
 		class layer_base{
 		public:
@@ -65,7 +59,7 @@ namespace skynet{namespace nn{
 
 			virtual vectord dedw() = 0;
 
-			virtual update(const vectord &) = 0;
+			virtual void update(const vectord &) = 0;
 		};
 
 		template <typename F = sigmoid_function<>>
@@ -177,9 +171,9 @@ namespace skynet{namespace nn{
 		virtual vectord w(){
 			auto it_begin = _w.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
-				auto layer = *(_layers[i]);
-				std::copy(layer.begin(), layer.end(), it_begin);
-				it_begin += layer.size();
+				auto w = _layers[i]->w();
+				std::copy(w.begin(), w.end(), it_begin);
+				it_begin += w.size();
 			}
 
 			return _w;
@@ -189,16 +183,16 @@ namespace skynet{namespace nn{
 		virtual vectord dedw(){
 			auto it_begin = _dedw.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
-				auto layer = *(_layers[i]);
-				std::copy(layer.begin(), layer.end(), it_begin);
-				it_begin += layer.size();
+				auto layer_dedw = _layers[i]->dedw();
+				std::copy(layer_dedw.begin(), layer_dedw.end(), it_begin);
+				it_begin += layer_dedw.size();
 			}
 
 			return _dedw;
 		}
 
 		///\brief	Update the weights by the delta.
-		virtual vectord update(const vectord &delta){
+		virtual void update(const vectord &delta){
 			_w += delta;
 		}
 		
@@ -230,7 +224,7 @@ namespace skynet{namespace nn{
 		size_t epoch_num()	const				{ return _epoch_num; }
 		void epoch_num(size_t v)				{ _epoch_num = v; }
 		//
-		void train(const ml::database2<double, int> &data){
+		void train(const ml::database2<double, int> &data, optimizer &opt){
 			init();
 
 			ASSERT(_output.size() == _layers.back()->size(), "");
@@ -240,7 +234,6 @@ namespace skynet{namespace nn{
 			std::cout << "The samples size is: " << data.targets.size2() << std::endl;
 #endif // _CONSOLE
 
-			optimizer opt(make_shared(this));
 			for (size_t epoch = 0; epoch < _epoch_num; ++epoch){
 				double error = 0;
 				for (size_t i = 0; i < data.targets.size2(); ++i){
@@ -257,9 +250,6 @@ namespace skynet{namespace nn{
 				std::cout << epoch << " epoch error: " << error << std::endl;
 #endif // _CONSOLE
 				opt.step();
-//				for (auto &e : _optimizers){
-//					e.step();
-//				}
 			}
 		};
 
@@ -271,7 +261,7 @@ namespace skynet{namespace nn{
 			_layers.front()->in(_input);
 			_layers.front()->init();
 
-			size_t size_pre = _layers.front().size(); //pre-layer neuron size
+			size_t size_pre = _layers.front()->size(); //pre-layer neuron size
 			size_t w_size = (_input.size()+1) * size_pre;    //the size of the all weights
 			for (auto it = _layers.begin()+1; it != _layers.end(); ++it){
 				(*it)->in((*std::prev(it))->out());
@@ -283,15 +273,10 @@ namespace skynet{namespace nn{
 
 			_w.resize(w_size);
 			_dedw.resize(w_size);
-
-			for (size_t i = 0; i < _layers.size(); ++i){
-				_optimizers.push_back(optimizer(_layers[i]));
-			}
 		}
 
 	private:
 		std::vector<shared_ptr<layer_base>>					_layers;
-		std::vector<optimizer>								_optimizers;
 		vectord												_input;
 		vectord												_output;
 
