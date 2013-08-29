@@ -41,7 +41,8 @@ namespace skynet{
 				char *line = new char[100];
 				fs.getline(line, 100);
 				std::vector<string> nums;
-				boost::split(nums, string(line), boost::is_any_of(","));
+				string s_line(line);
+				boost::split(nums, s_line, boost::is_any_of(","));
 				delete[] line;
 				for (int k = 0; k < 4; ++k){
 					datas[i](k, j) = boost::lexical_cast<double, string>(nums[k]);

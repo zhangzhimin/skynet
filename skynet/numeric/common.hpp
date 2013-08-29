@@ -34,9 +34,9 @@ namespace skynet{namespace numeric{
 	public:
 		typedef	Vector						vector;
 
-		virtual vector dedw() const = 0;
+		virtual vector dedw() = 0;
 		
-		virtual vector w() const = 0;
+		virtual vector w() = 0;
 
 		virtual void update(const vector &delta_w) = 0;
 	};

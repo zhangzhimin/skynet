@@ -1,11 +1,11 @@
 #pragma once
 
-#include <boost\numeric\ublas\fwd.hpp>
-#include <boost\numeric\ublas\matrix.hpp>
-#include <boost\numeric\ublas\vector.hpp>
-#include <boost\numeric\ublas\lu.hpp>
+#include <boost/numeric/ublas/fwd.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/lu.hpp>
 
-#include <skynet\utility\algorithm.hpp>
+#include <skynet/utility/algorithm.hpp>
 
 namespace skynet{
 

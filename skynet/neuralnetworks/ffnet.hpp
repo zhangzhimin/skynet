@@ -36,16 +36,18 @@ THE SOFTWARE.
 #include <boost/math/special_functions/log1p.hpp>
 
 namespace skynet{namespace nn{
-
+	using namespace numeric::model;
+	using namespace numeric::rprop;
+	using namespace numeric::bgfs;
 
 	template <typename Optimizer = numeric::rprop<numeric::model<>>>
-	class ffnet{
+	class ffnet: public model<>{
 	public:
 		typedef ffnet											self;
 
 		typedef numeric::rprop<numeric::model<>>			optimizer;
 
-		class layer_base : public numeric::model<>{
+		class layer_base{
 		public:
 			virtual void front_calculate() = 0;
 
@@ -58,6 +60,12 @@ namespace skynet{namespace nn{
 			virtual vectord out() const = 0;
 
 			virtual size_t size() const = 0;
+
+			virtual vectord w() const = 0;
+
+			virtual vectord dedw() = 0;
+
+			virtual update(const vectord &) = 0;
 		};
 
 		template <typename F = sigmoid_function<>>
@@ -125,7 +133,7 @@ namespace skynet{namespace nn{
 				return next_error;
 			}
 
-			virtual vectord dedw() const{
+			virtual vectord dedw(){
 				ASSERT(_batch_size != 0, "The backprogation is not excuted.");
 
 				auto scale = 1.0 / _batch_size;
@@ -158,9 +166,42 @@ namespace skynet{namespace nn{
 			vectord				_y;
 			vectord				_out;
 			vectord				_local_error;
-			mutable matrixd				_dedws;
+			matrixd				_dedws;
 			size_t				_batch_size;
 		};
+	
+	///\brief	Implements the interface of numeric::model
+	public:
+
+		///\brief	Returns the weights of ffnet.
+		virtual vectord w(){
+			auto it_begin = _w.begin();
+			for (size_t i = 0; i < _layers.size(); ++i){
+				auto layer = *(_layers[i]);
+				std::copy(layer.begin(), layer.end(), it_begin);
+				it_begin += layer.size();
+			}
+
+			return _w;
+		}
+
+		///\brief	Returns the derivative of the error on the weights
+		virtual vectord dedw(){
+			auto it_begin = _dedw.begin();
+			for (size_t i = 0; i < _layers.size(); ++i){
+				auto layer = *(_layers[i]);
+				std::copy(layer.begin(), layer.end(), it_begin);
+				it_begin += layer.size();
+			}
+
+			return _dedw;
+		}
+
+		///\brief	Update the weights by the delta.
+		virtual vectord update(const vectord &delta){
+			_w += delta;
+		}
+		
 
 	public:
 		ffnet(size_t in_size, size_t out_size): _input(in_size+1), _output(out_size), _epoch_num(100){	}
@@ -199,6 +240,7 @@ namespace skynet{namespace nn{
 			std::cout << "The samples size is: " << data.targets.size2() << std::endl;
 #endif // _CONSOLE
 
+			optimizer opt(make_shared(this));
 			for (size_t epoch = 0; epoch < _epoch_num; ++epoch){
 				double error = 0;
 				for (size_t i = 0; i < data.targets.size2(); ++i){
@@ -214,9 +256,10 @@ namespace skynet{namespace nn{
 #ifdef _CONSOLE
 				std::cout << epoch << " epoch error: " << error << std::endl;
 #endif // _CONSOLE
-				for (auto &e : _optimizers){
-					e.step();
-				}
+				opt.step();
+//				for (auto &e : _optimizers){
+//					e.step();
+//				}
 			}
 		};
 
@@ -227,10 +270,19 @@ namespace skynet{namespace nn{
 			//this make the weights matrix size is matched.
 			_layers.front()->in(_input);
 			_layers.front()->init();
+
+			size_t size_pre = _layers.front().size(); //pre-layer neuron size
+			size_t w_size = (_input.size()+1) * size_pre;    //the size of the all weights
 			for (auto it = _layers.begin()+1; it != _layers.end(); ++it){
 				(*it)->in((*std::prev(it))->out());
 				(*it)->init();
+
+				size_t size_cur = (*it)->size();
+				w_size += (size_pre+1)*size_cur;
 			}
+
+			_w.resize(w_size);
+			_dedw.resize(w_size);
 
 			for (size_t i = 0; i < _layers.size(); ++i){
 				_optimizers.push_back(optimizer(_layers[i]));
@@ -244,6 +296,9 @@ namespace skynet{namespace nn{
 		vectord												_output;
 
 		size_t												_epoch_num;
+		
+		vectord												_w;
+		vectord												_dedw;	
 	};
 
 

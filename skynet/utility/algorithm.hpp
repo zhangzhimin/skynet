@@ -5,10 +5,9 @@ Purpose    :
 ********************************************************************************/
 #pragma once
 
-#include <skynet/config.hpp>
 #include <skynet/utility/type_traits.hpp>
 #include <skynet/core/array_express.hpp>
-
+#include <skynet/core/point.hpp>
 
 namespace skynet{
 
@@ -82,7 +81,7 @@ namespace skynet{
 
 	template <typename A, typename Fun>
 	void for_each_index2(const array_express<A> &range, Fun fun){
-		static_assert(Range::dim == 2, "The dim is not matched.");
+		static_assert(A::dim == 2, "The dimension should be 2.");
 		static_assert(is_same<typename unary_function_traits<Fun>::argument_type, index2>::value, 
 			"The argument type must be index2.");
 
