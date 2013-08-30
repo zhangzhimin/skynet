@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 namespace skynet{namespace numeric{
 
-
+	///\brief Rprop algorithm, http://en.wikipedia.org/wiki/Rprop
 	template <typename M>
 	class rprop{
 	public:
@@ -39,16 +39,21 @@ namespace skynet{namespace numeric{
 		typedef typename M::vector							vector;
 		typedef typename vector::value_type					value_type;
 
+		///\brief	Constructs by the model smart point, and initialize the parameters.
 		rprop(shared_ptr<model> model): _model(model), _init_delta(0.125),
-			_eta_positive(1.2), _eta_negative(0.5), _max_delta(50), _min_delta(0.0){
-				_dedw_old.resize(model->w().size());
+			_eta_positive(1.2), _eta_negative(0.5), _max_delta(50), _min_delta(0.0), _initialized(false){}
+
+		///\brief	Iterates once.
+		virtual void step(){
+			if (!_initialized){
+				_initialized = true;
+				_dedw_old.resize(_model->w().size());
 				fill(_dedw_old, 0);
 				_delta_w.resize(_dedw_old.size());
 				_delta.resize(_dedw_old.size());
 				fill(_delta, _init_delta);
-		}
+			}
 
-		virtual void step(){
 			auto dedw = _model->dedw();
 			for (size_t i = 0; i < dedw.size(); ++i){
 				auto re = _dedw_old[i] * dedw[i];
@@ -64,8 +69,8 @@ namespace skynet{namespace numeric{
 				}
 			}
 
-			_dedw_old.assign_temporary(dedw);
-			_model->update(_delta_w);
+			_dedw_old.assign(dedw);
+			_model->w(_model->w() + _delta_w);
 		}
 
 		double eta_positive() const							{ return _eta_positive; }
@@ -92,7 +97,7 @@ namespace skynet{namespace numeric{
 		value_type			  _max_delta;
 		value_type			  _min_delta;
 		value_type			  _init_delta;
-
+		bool				  _initialized;
 	};
 
 

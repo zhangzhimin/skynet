@@ -29,22 +29,27 @@ THE SOFTWARE.
 
 namespace skynet{namespace numeric{
 
+	///\brief	The interface of the model which has derivative function.
 	template <typename Vector = vectord>
 	class model{
 	public:
 		typedef	Vector						vector;
 
+		///\brief	Gets the derivative of the weights on the Error.
 		virtual vector dedw() = 0;
 		
+		///\brief	Gets the weights of the model.
 		virtual vector w() = 0;
 
-		virtual void update(const vector &delta_w) = 0;
+		///\brief	Sets the weights of the model.
+		virtual void w(const vector &) = 0;
 	};
 
 	
 	///\brief The interface of the optimizer.
 	class optimizer{
 	public:
+		///\brief	Iterates once.
 		virtual void step() = 0;
 	};
 
@@ -55,13 +60,15 @@ namespace skynet{namespace numeric{
 		typedef Opt							optimizer;
 		typedef typename optimizer::model	model;
 		
+
 		///\brief Constructs by the model
 		optimizer_adaptor(shared_ptr<model> sp_model) : Opt(sp_model){}
 
-
+		///\brief	Initializes
 		virtual void step(){
 			Opt::step();
 		}
+
 	};
 
 }}

@@ -36,16 +36,17 @@ namespace skynet{namespace nn{
 	using numeric::rprop;
 	using numeric::optimizer;	
 
-	///\brief	Implements the 
+	///\brief	Implements the forward feedback neural networks
 	class ffnet: public model<>{
 	public:
 		typedef ffnet											self;
 
+		///\brief	The interface of hidden layer or output layer
 		class layer_base{
 		public:
 			virtual void front_calculate() = 0;
 
-			virtual vectord backpropagate(const vectord &error) = 0;
+			virtual vectord back_propagate(const vectord &error) = 0;
 
 			virtual void init() = 0; 
 
@@ -55,13 +56,16 @@ namespace skynet{namespace nn{
 
 			virtual size_t size() const = 0;
 
-			virtual vectord w() const = 0;
+			virtual vectord w() = 0;
+
+			virtual void w(const vectord &)  = 0;
 
 			virtual vectord dedw() = 0;
 
-			virtual void update(const vectord &) = 0;
+			virtual void update() = 0;
 		};
 
+		///\brief	The hidden or output layer with transfer function template parameter.
 		template <typename F = sigmoid_function<>>
 		class layer : public layer_base{
 		public:
@@ -107,7 +111,7 @@ namespace skynet{namespace nn{
 				transform(_y, _out, _fun);
 			}
 
-			virtual vectord backpropagate(const vectord &error){
+			virtual vectord back_propagate(const vectord &error){
 				_batch_size++;
 				//calculate local error
 				derivative<F> derivative_f(_fun);
@@ -131,24 +135,26 @@ namespace skynet{namespace nn{
 				ASSERT(_batch_size != 0, "The backprogation is not excuted.");
 
 				auto scale = 1.0 / _batch_size;
-				vectord temp(_dedws.data().size());
-				transform(_dedws.data(), temp.data(), [scale](double v){ return v * scale; });
-				return temp;
+				_dedws *= scale;
+				return vectord(_dedws.data());
 			}
 
-			virtual vectord w() const{
-				vectord temp(_weights.data());
-				return temp;
+			virtual vectord w() {
+				return vectord(_weights.data());
 			}
 
-			virtual void update(const vectord &delta_w){
-				matrixd temp(_weights.size1(), _weights.size2(), delta_w.data());
-				_weights += temp;
+			virtual void w(const vectord &v){
+				_weights = matrixd(_weights.size1(), _weights.size2(), v.data());
+			}
+
+			///\brief	Zero the derivative and the counter.
+			virtual void update(){
 				for (size_t r = 0; r < _dedws.size1(); ++r){
 					for (size_t c = 0; c < _dedws.size2(); ++c){
 						_dedws(r,c) = 0.0;
 					}
 				}
+				_batch_size = 0;
 			}
 
 			virtual size_t  size() const						{ return _out.size()-1; }
@@ -163,11 +169,11 @@ namespace skynet{namespace nn{
 			matrixd				_dedws;
 			size_t				_batch_size;
 		};
-	
-	///\brief	Implements the interface of numeric::model
+
+		///\brief	Implements the interface of numeric::model
 	public:
 
-		///\brief	Returns the weights of ffnet.
+		///\brief	Gets the weights of ffnet(shallow copy).
 		virtual vectord w(){
 			auto it_begin = _w.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
@@ -179,7 +185,7 @@ namespace skynet{namespace nn{
 			return _w;
 		}
 
-		///\brief	Returns the derivative of the error on the weights
+		///\brief	Gets the derivative of the error on the weights(shallow copy)
 		virtual vectord dedw(){
 			auto it_begin = _dedw.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
@@ -191,15 +197,27 @@ namespace skynet{namespace nn{
 			return _dedw;
 		}
 
-		///\brief	Update the weights by the delta.
-		virtual void update(const vectord &delta){
-			_w += delta;
+		///\brief	Sets the weights of ffnet(shallow copy)
+		virtual void w(const vectord &v){
+			_w = v;
+
+			//copy the ffnet weights to the layers weights
+			auto it_begin = _w.begin();
+			for (size_t i = 0; i < _layers.size(); ++i){
+				vectord  w_temp(_layers[i]->w().size());
+				std::copy(it_begin, it_begin+w_temp.size(), w_temp.begin());
+				_layers[i]->w(w_temp);
+
+				it_begin += w_temp.size();
+				_layers[i]->update();
+			}
 		}
 		
-
 	public:
+		///\brief	Constructs the ffnet by the input size and output size.
 		ffnet(size_t in_size, size_t out_size): _input(in_size+1), _output(out_size), _epoch_num(100){	}
 
+		///\brief	Returs the prediction value.
 		vectord operator()(const vectord &input){
 			ASSERT(input.size() == (_input.size()-1), "The input size is not matched.");
 
@@ -217,13 +235,19 @@ namespace skynet{namespace nn{
 			return _output;
 		}
 
+		///\brief	Adds the hidden or output layer to ffnet.
 		void add_layer(shared_ptr<layer_base> sp_layer){
 			_layers.push_back(sp_layer);
 		}
 
+		///\brief	Gets the training epoch number.
 		size_t epoch_num()	const				{ return _epoch_num; }
+		///\brief	Sets the training epoch number.
 		void epoch_num(size_t v)				{ _epoch_num = v; }
-		//
+		
+		///\brief		Trains the ffnet
+		///\param [in] data	The traing data
+		///\param [in] opt	The optimizer based on gradient descent.
 		void train(const ml::database2<double, int> &data, optimizer &opt){
 			init();
 
@@ -242,7 +266,7 @@ namespace skynet{namespace nn{
 					error += ublas::norm_2(e);
 
 					for (auto it = _layers.rbegin(); it != _layers.rend(); ++it){
-						e = (*it)->backpropagate(e);
+						e = (*it)->back_propagate(e);
 					}
 				}
 				error /= data.targets.size2();
@@ -262,7 +286,7 @@ namespace skynet{namespace nn{
 			_layers.front()->init();
 
 			size_t size_pre = _layers.front()->size(); //pre-layer neuron size
-			size_t w_size = (_input.size()+1) * size_pre;    //the size of the all weights
+			size_t w_size = (_input.size()) * size_pre;    //the size of the all weights
 			for (auto it = _layers.begin()+1; it != _layers.end(); ++it){
 				(*it)->in((*std::prev(it))->out());
 				(*it)->init();
@@ -281,7 +305,7 @@ namespace skynet{namespace nn{
 		vectord												_output;
 
 		size_t												_epoch_num;
-		
+
 		vectord												_w;
 		vectord												_dedw;	
 	};

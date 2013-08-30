@@ -1,4 +1,4 @@
-
+#define _CONSOLE
 
 #include <skynet/neuralnetworks/ffnet.hpp>
 #include <skynet/utility/load_data.hpp>
@@ -30,17 +30,17 @@ int main()
 		column(data.targets, i+100)[2] = 1;
 	}
 	
-	ffnet net(4, 3);
-	net.add_layer(make_shared<ffnet::layer<>>(5));
-	net.add_layer(make_shared<ffnet::layer<>>(3));
+	auto net = make_shared<ffnet>(4, 3);
+	net->add_layer(make_shared<ffnet::layer<>>(5));
+	net->add_layer(make_shared<ffnet::layer<>>(3));
 
-	optimizer_adaptor<rprop<ffnet>> opt(make_shared<ffnet>(net));
+	optimizer_adaptor<rprop<ffnet>> opt(net);
 
-	net.epoch_num(500);
-	net.train(data, opt); 
+	net->epoch_num(500);
+	net->train(data, opt); 
 
 	for (size_t i = 0; i < data.patterns.size2(); ++i){
-		std::cout << i <<": " << net(column(data.patterns, i)) << std::endl;
+		std::cout << i <<": " << (*net)(column(data.patterns, i)) << std::endl;
 	}
 
 
