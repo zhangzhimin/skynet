@@ -6,7 +6,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <array>
 #include <deque>
 #include <exception>
 #include <fstream>
@@ -14,12 +13,12 @@
 #include <functional>
 #include <memory>
 #include <numeric>
+#include <array>
 #include <tuple>
 #include <type_traits>
 #include <cmath>
 #include <queue>
 #include <tuple>
-
 
 
 //The skynet lib depended on the boost lib.just the serialization static_lib is needed.
