@@ -11,7 +11,7 @@ int main()
 {
 	std::srand(uint(std::time(nullptr)));
 
-	auto iris_data = get_iris("~/git/skynet/data/Iris.data");
+	auto iris_data = get_iris("../data/Iris.data");
 	ml::database2<double, int> data;
 	data.patterns = ublas::matrix<double>(4, 150);
 	data.targets = ublas::zero_matrix<int>(3, 150);
