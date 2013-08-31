@@ -33,7 +33,8 @@ namespace skynet{
 
 
 	std::array<ublas::matrix<double>, 3> get_iris(std::string filename){
-		std::ifstream fs(filename, std::ios::binary);
+		std::ifstream fs(filename);
+        ASSERT(!fs.bad() && fs.good(), "Failed to open the file.");
 		std::array<ublas::matrix<double>, 3> datas;
 		for (int i = 0; i < 3; ++i){
 			datas[i] = ublas::matrix<double>(4, 50);
@@ -44,6 +45,7 @@ namespace skynet{
 				string s_line(line);
 				boost::split(nums, s_line, boost::is_any_of(","));
 				delete[] line;
+                ASSERT(nums.size() == 5, "Failed to parse the date.");
 				for (int k = 0; k < 4; ++k){
 					datas[i](k, j) = boost::lexical_cast<double, string>(nums[k]);
 				}
