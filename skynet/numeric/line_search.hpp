@@ -74,9 +74,9 @@ namespace skynet{namespace numeric{
 
 		//function will make sure the size of a_p, b_p, c_p is the same.
 #ifndef DISABLE_ASSERT
-	//	auto d1 = normalize(c_p-b_p);
-	//	auto d2 = normalize(c_p-a_p);
-	//	ASSERT(is_equal(abs(inner_prod(d1,d2)), 1.0, tau), "The a b c is not in the same line.");
+		auto d1 = normalize(c_p-b_p);
+		auto d2 = normalize(c_p-a_p);
+		ASSERT(is_equal(abs(ublas::inner_prod(d1,d2)), 1.0, tau), "The a b c is not in the same line.");
 #endif // !DISABLE_ASSERT
 
 		argument_type a(a_p.size());

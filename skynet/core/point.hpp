@@ -372,15 +372,15 @@ namespace skynet{
 		return stream <<")";
 	}
 
-	template <typename T, size_t D>
-	point<T, D> abs(const point<T, D> &p){
-		point <T, D> temp;
-		for (size_t i = 0; i < D; ++i){
-			temp[i] = std::abs(p[i]);
-		}
+	//template <typename T, size_t D>
+	//point<T, D> abs(const point<T, D> &p){
+	//	point <T, D> temp;
+	//	for (size_t i = 0; i < D; ++i){
+	//		temp[i] = std::abs(p[i]);
+	//	}
 
-		return temp;
-	}
+	//	return temp;
+	//}
 
 	template <typename T, size_t D>
 	point<int, D> nearest_neighbor(const point<T, D> &p){
