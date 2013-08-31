@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <skynet/numeric/common.hpp>
 #include <skynet/utility/algorithm.hpp>
 #include <skynet/utility/math.hpp>
+#include <skynet/numeric/line_search.hpp>
 
 namespace skynet{namespace numeric{
 
@@ -101,10 +102,77 @@ namespace skynet{namespace numeric{
 	};
 
 
-	template <typename M>
-	class lbfgs{
+	///\brief	Implements the BFGS algorithm. http://en.wikipedia.org/wiki/BFGS
+	template <typename Model>
+	class bfgs{
+	public:
+		typedef Model								model;
+		typedef typename model::vector				vector;
+		typedef typename vector::value_type			value_type;
+		typedef ublas::matrix<value_type>			matrix;
 
+		bfgs(shared_ptr<model> model) : _model(model), _first(true), _model_fun(_model){}
+
+		///\brief	Iterates once
+		void step(){
+			//initialize the vector and matrix size, and the first derivative.
+			if (_first){
+				//initialize the diag element is , others are zero.
+				_hession_inv.resize(_model->w().size(), false);
+				_hession_inv.assign(ublas::zero_matrix<value_type>(_hession_inv.size1(), _hession_inv.size2()));
+				for (size_t i = 0; i < _hession_inv.size1(); ++i){
+					_hession_inv(i, i) = 1.0;
+				}
+
+				_g_k0.resize(_model->dedw().size());
+				_g_k0.assign(_model->dedw());
+				_start_point.resize(_model->w().size());
+				_start_point.assign(_model->w());
+				_end_point.resize(_model->w().size());
+				_end_point = _start_point - _g_k0;
+
+				auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 100);
+				//_s = -0.01 * _g_k0;
+				_model->w(best_point);
+				_s = best_point - _start_point;
+				_first = false;
+				return;
+			}
+
+			_g_k1 = _model->dedw();
+			vector y = _g_k1 - _g_k0;
+			auto s_t_y = inner_prod(_s,y);
+			matrix	s_mat(_s.size(), 1, _s.data());
+			matrix y_mat(y.size(), 1, y.data());
+			matrix part1 = (1.0/ sqr(s_t_y)) * (s_t_y+inner_prod(y, prod(_hession_inv, y))) * prod(s_mat,trans(s_mat));
+			matrix part21 = prod(y_mat, trans(s_mat));
+			part21 = prod(_hession_inv, part21);
+			matrix part22 = prod(trans(y_mat), _hession_inv);
+			part22 = prod(s_mat, part22);
+			matrix part2 = (-1.0/s_t_y) * (part21 + part22);
+			_hession_inv = _hession_inv + part1 + part2;
+			auto d_k = -prod(_hession_inv, _g_k1);
+
+			_start_point.assign(_model->w());
+			_end_point = _start_point + d_k;
+			auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 100);
+			_model->w(best_point);
+			_s = best_point - _start_point;
+
+			_g_k0.assign(_g_k1);
+		}
+
+	private:
+		shared_ptr<model>						_model;
+		ublas::symmetric_matrix<value_type>		_hession_inv;
+		vector									_g_k0;
+		vector									_g_k1;
+		vector									_s;
+		bool									_first;
+
+		vector									_start_point;
+		vector									_end_point;
+		model_function<model>					_model_fun;
 	};
-
 
 }}

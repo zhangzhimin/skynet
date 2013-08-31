@@ -27,9 +27,9 @@ THE SOFTWARE.
 #include <skynet/ml/utility.hpp>
 #include <skynet/core/function.hpp>
 #include <skynet/utility/exception.hpp>
-#include <skynet/utility/tag.hpp>
 #include <skynet/numeric/gradient_descent.hpp>
 
+#pragma warning(disable: 4996)
 
 namespace skynet{namespace nn{
 	using numeric::model;
@@ -212,8 +212,30 @@ namespace skynet{namespace nn{
 				_layers[i]->update();
 			}
 		}
+
+
+		virtual double error(const vectord &v){
+			this->w(v);
+
+			double mse = 0;
+			for (size_t i = 0; i < _data.targets.size2(); ++i){
+				auto out = (*this)(ublas::column(_data.patterns, i));
+				vectord e = column(_data.targets, i) - out;
+				mse += ublas::norm_2(e);
+
+				for (auto it = _layers.rbegin(); it != _layers.rend(); ++it){
+					e = (*it)->back_propagate(e);
+				}
+			}
+			mse /= _data.targets.size2();
+
+			return mse;
+		}
+
 		
 	public:
+		ffnet(const self &rhs): _layers(rhs._layers), _input(rhs._input), _output(rhs._output), 
+			_epoch_num(rhs._epoch_num), _w(rhs._w), _dedw(rhs._dedw){}
 		///\brief	Constructs the ffnet by the input size and output size.
 		ffnet(size_t in_size, size_t out_size): _input(in_size+1), _output(out_size), _epoch_num(100){	}
 
@@ -252,6 +274,7 @@ namespace skynet{namespace nn{
 			init();
 
 			ASSERT(_output.size() == _layers.back()->size(), "");
+			_data = data;
 
 #ifdef _CONSOLE
 			std::cout << "====The bp net begin training.====" << std::endl;
@@ -308,6 +331,8 @@ namespace skynet{namespace nn{
 
 		vectord												_w;
 		vectord												_dedw;	
+
+		ml::database2<double, int>							_data;
 	};
 
 

@@ -22,7 +22,7 @@ namespace skynet{
 
 	struct full_connected{};
 
-	struct norm_1{};
+	//struct norm_1{};
 
 	struct classifier{};
 	struct fitting{};

@@ -50,6 +50,12 @@ namespace skynet{
 		typedef P				argument_type;
 	};
 
+ 	template <typename R, typename O, typename P>
+	struct unary_function_traits<R (O::*)(const P&)>{
+		typedef R				result_type;
+		typedef P				argument_type;
+	};
+
 	template <typename R, typename P>
 	struct unary_function_traits<R (*)(const P &)>{
 		typedef R				result_type;

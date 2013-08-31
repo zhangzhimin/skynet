@@ -34,7 +34,7 @@ int main()
 	net->add_layer(make_shared<ffnet::layer<>>(5));
 	net->add_layer(make_shared<ffnet::layer<>>(3));
 
-	optimizer_adaptor<rprop<ffnet>> opt(net);
+	optimizer_adaptor<bfgs<ffnet>> opt(net);
 
 	net->epoch_num(500);
 	net->train(data, opt); 

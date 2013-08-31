@@ -30,7 +30,7 @@ namespace skynet{
 		typedef ptrdiff_t								difference_type;
 
 		index_iterator() : _index(nullptr), _pos(0){}
-		index_iterator(index_type *p_n, const int &pos) : _index(p_n), _pos(pos){	}
+		index_iterator(index_type *p_n, size_t pos) : _index(p_n), _pos(pos){	}
 		index_iterator(const index_iterator &it) : _index(it._index), _pos(it._pos){ }
 
 		index_iterator &operator=(const index_iterator &it){

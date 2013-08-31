@@ -125,9 +125,15 @@ namespace skynet{
 			return *this;
 		}
 
-		void resize(size_t size, value_type v = value_type(0)){
+		void resize(size_t size){
 			shared_buffer temp(size);
 			std::swap(*this, temp);
+		}
+
+		void resize(size_t size, value_type v){
+			shared_buffer temp(size);
+			std::swap(*this, temp);
+			std::fill(this->begin(), this->end(), v);
 		}
 
 		reference operator[](size_t i){ 

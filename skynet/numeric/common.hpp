@@ -33,7 +33,8 @@ namespace skynet{namespace numeric{
 	template <typename Vector = vectord>
 	class model{
 	public:
-		typedef	Vector						vector;
+		typedef	Vector							vector;
+		typedef typename vector::value_type		value_type;
 
 		///\brief	Gets the derivative of the weights on the Error.
 		virtual vector dedw() = 0;
@@ -43,8 +44,26 @@ namespace skynet{namespace numeric{
 
 		///\brief	Sets the weights of the model.
 		virtual void w(const vector &) = 0;
+
+		virtual value_type error(const vector &) = 0;
 	};
 
+	template <typename Model>
+	class model_function{
+	public:
+		typedef Model		model;
+		typedef typename model::vector			vector;
+		typedef typename model::value_type		value_type;
+
+		model_function(shared_ptr<model> sp_model): _sp_model(sp_model){}
+
+		value_type operator()(const vector &input){
+			return _sp_model->error(input);
+		}
+
+	private:
+		shared_ptr<model>		_sp_model;
+	};
 	
 	///\brief The interface of the optimizer.
 	class optimizer{

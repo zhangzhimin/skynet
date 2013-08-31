@@ -74,9 +74,9 @@ namespace skynet{namespace numeric{
 
 		//function will make sure the size of a_p, b_p, c_p is the same.
 #ifndef DISABLE_ASSERT
-		auto d1 = normalize(c_p-b_p);
-		auto d2 = normalize(c_p-a_p);
-		ASSERT(is_equal(abs(inner_prod(d1,d2)), 1.0, tau), "The a b c is not in the same line.");
+	//	auto d1 = normalize(c_p-b_p);
+	//	auto d2 = normalize(c_p-a_p);
+	//	ASSERT(is_equal(abs(inner_prod(d1,d2)), 1.0, tau), "The a b c is not in the same line.");
 #endif // !DISABLE_ASSERT
 
 		argument_type a(a_p.size());
@@ -121,6 +121,21 @@ namespace skynet{namespace numeric{
 			}
 		}
 
-		THROW_EXCEPTION(std::runtime_error("gold section search is not converged."));
+		return (c+a)/2;
+		//THROW_EXCEPTION(std::runtime_error("gold section search is not converged."));
 	}
+
+
+		template <typename F>
+	typename unary_function_traits<F>::argument_type gold_section_search(
+		F f,
+		const typename unary_function_traits<F>::argument_type &a_p,
+		const typename unary_function_traits<F>::argument_type &c_p,
+		double tau = 1e-6, size_t max_iteration = 1000)
+	{
+		typedef typename unary_function_traits<F>::argument_type argument_type;
+		auto b_p = (c_p-a_p) * RES_GOLD + a_p;
+		return gold_section_search(f, a_p, b_p, c_p, tau, max_iteration);
+	}
+
 }}
