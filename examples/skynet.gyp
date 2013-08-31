@@ -28,7 +28,7 @@
 				"VCCLCompilerTool":{
 #"Optimization": "0",
 					"WarningLevel": "4",
-					"WarnAsError": "true",
+				#	"WarnAsError": "true",
 					"RuntimeLibrary": "1",
 				}
 			},
