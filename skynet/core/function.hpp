@@ -153,7 +153,7 @@ namespace skynet{
 	public:
 		static_assert(is_floating_point<T>::value, "The T should be float.");
 
-		sigmoid_function() : _scale(1.716), _gamma(0.66){}
+		sigmoid_function() : _scale(1.0), _gamma(1.0){}
 
 		sigmoid_function(T scale, T gamma): _scale(scale), _gamma(gamma){}
 

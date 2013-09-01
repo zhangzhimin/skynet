@@ -12,26 +12,26 @@ int main()
 	std::srand(uint(std::time(nullptr)));
 
 	auto iris_data = get_iris("../data/Iris.data");
-	ml::database2<double, int> data;
+	ml::database2<double, double> data;
 	data.patterns = ublas::matrix<double>(4, 150);
-	data.targets = ublas::zero_matrix<int>(3, 150);
+	data.targets = ublas::zero_matrix<double>(3, 150);
 	for (int i = 0; i < 50; ++i){
 		column(data.patterns, i) = column(iris_data[0], i);
-		column(data.targets, i)[0] = 1;
+		column(data.targets, i)[0] = 0.8;
 		column(data.targets, i)[1] = 0.2;
-		column(data.targets, i)[2] = 0;
+		column(data.targets, i)[2] = 0.2;
 		column(data.patterns, i+50) = column(iris_data[1], i);
 		column(data.targets, i+50)[0] = 0.2;
-		column(data.targets, i+50)[1] = 1;
+		column(data.targets, i+50)[1] = 0.8;
 		column(data.targets, i+50)[2] = 0.2;
 		column(data.patterns, i+100) = column(iris_data[2], i);
 		column(data.targets, i+100)[0] = 0.2;
 		column(data.targets, i+100)[1] = 0.2;
-		column(data.targets, i+100)[2] = 1;
+		column(data.targets, i+100)[2] = 0.8;
 	}
 	
 	auto net = make_shared<ffnet>(4, 3);
-	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(5));
+	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(20));
 	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(3));
 
 	optimizer_adaptor<bfgs<ffnet>> opt(net);

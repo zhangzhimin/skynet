@@ -170,11 +170,17 @@ namespace skynet{namespace nn{
 			size_t				_batch_size;
 		};
 
+		class sparse_layer_base: public layer_base{
+		public:
+			virtual double kl_divergence() = 0;
+			virtual double beta() const = 0;
+		};
+
 		template <typename F = sigmoid_function<>>
-		class sparse_layer: public layer_base{
+		class sparse_layer: public sparse_layer_base{
 		public:
 			sparse_layer(size_t size) :  _out(size+1), _y(size+1), _batch_size(0), _local_error(size, 0.0),
-				_activaties(size), _sparseness(0.2), _beta(0.1){}
+				_activaties(size), _sparseness(0.2), _beta(0.1), _refresh(true){}
 
 			void transfer_function(F f){
 				_fun = f;
@@ -228,6 +234,10 @@ namespace skynet{namespace nn{
 					}
 				}
 
+				for (size_t i = 0; i < _activaties.size(); ++i){
+					_activaties[i] += _out[i];
+				}
+
 				auto  temp_error = ublas::prod(_weights, _local_error);
 				vectord next_error(_in.size()-1);
 				std::copy(temp_error.begin(), temp_error.end()-1, next_error.begin());
@@ -235,12 +245,16 @@ namespace skynet{namespace nn{
 			}
 
 			virtual vectord dedw(){
-				ASSERT(_batch_size != 0, "The backprogation is not excuted.");
+				if (_refresh){
+					ASSERT(_batch_size != 0, "");
+					auto scale = 1.0 / _batch_size;
+					_dedws *= scale;
 
-				auto scale = 1.0 / _batch_size;
-				_dedws *= scale;
-
-				return vectord(_dedws.data());
+					_refresh = false;
+					return vectord(_dedws.data());
+				}else{
+					return vectord(_dedws.data());
+				}
 			}
 
 			virtual vectord w() {
@@ -259,6 +273,20 @@ namespace skynet{namespace nn{
 					}
 				}
 				_batch_size = 0;
+				_refresh = true;
+			}
+
+			virtual double kl_divergence(){
+				if (_refresh){
+					_activaties /= _batch_size;
+				}
+
+				vectord kl(_activaties.size());
+				for (size_t i = 0; i < kl.size(); ++i){
+					kl[i] = _sparseness*log(_sparseness/_activaties[i]) + (1-_sparseness)*log((1-_sparseness)/(1-_activaties[1]));
+				}
+
+				return sum(kl);
 			}
 
 			virtual size_t  size() const						{ return _out.size()-1; }
@@ -266,7 +294,7 @@ namespace skynet{namespace nn{
 			double sparseness() const									{ return _sparseness; }
 			void sparseness(double v)									{ _sparseness = v; }
 
-			double beta() const											{ return _beta; }
+			virtual double beta() const											{ return _beta; }
 			void beta(double v)											{ _beta = v; }
 
 		private:
@@ -282,6 +310,8 @@ namespace skynet{namespace nn{
 			vectord				_activaties;
 			double				_sparseness;
 			double				_beta;
+
+			bool				_refresh;
 		};
 
 		///\brief	Implements the interface of numeric::model
@@ -344,6 +374,13 @@ namespace skynet{namespace nn{
 			}
 			mse /= _data.targets.size2();
 
+			for (size_t i = 0; i < _layers.size(); ++i){
+				auto sp = std::dynamic_pointer_cast<sparse_layer_base>(_layers[i]);
+				if (sp){
+					mse += sp->beta() * sp->kl_divergence();
+				}
+			}
+
 			return mse;
 		}
 
@@ -385,7 +422,7 @@ namespace skynet{namespace nn{
 		///\brief		Trains the ffnet
 		///\param [in] data	The traing data
 		///\param [in] opt	The optimizer based on gradient descent.
-		void train(const ml::database2<double, int> &data, optimizer &opt){
+		void train(const ml::database2<double, double> &data, optimizer &opt){
 			init();
 
 			ASSERT(_output.size() == _layers.back()->size(), "");
@@ -447,7 +484,7 @@ namespace skynet{namespace nn{
 		vectord												_w;
 		vectord												_dedw;	
 
-		ml::database2<double, int>							_data;
+		ml::database2<double, double>						_data;
 	};
 
 
