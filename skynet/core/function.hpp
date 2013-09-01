@@ -50,7 +50,7 @@ namespace skynet{
 			return T(1);
 		}
 	};
-	
+
 
 	template <typename T = double>
 	class linear_function{
@@ -98,6 +98,57 @@ namespace skynet{
 
 
 	template <typename T = double>
+	class tanh_function{
+	public:
+		static_assert(is_floating_point<T>::value, "The T should be float.");
+
+		tanh_function() : _scale(1.716), _gamma(0.66){}
+
+		tanh_function(T scale, T gamma): _scale(scale), _gamma(gamma){}
+
+		tanh_function(const tanh_function &rhs) : _gamma(rhs._gamma), _scale(rhs._scale){}
+
+		tanh_function& operator=(const tanh_function &rhs){
+			_gamma = rhs._gamma;
+			_scale = rhs._scale;
+			return *this;
+		}
+
+		T operator()(T v) const{
+			return  _scale * std::tanh(_gamma*v);
+		}
+
+		T gamma() const							{ return _gamma; }
+		void gamma(T v)							{ _gamma = v; }
+
+		T scale() const							{ return _scale; }
+		void scale(T v)							{ _scale = v; }
+
+	private:
+		T	_gamma;
+		T	_scale;
+	};
+
+
+	template <typename T>
+	class derivative<tanh_function<T>>{
+	public:
+		derivative(tanh_function<T> f): _f(f){}
+
+		T operator()(T v) const{
+			auto gamma = _f.gamma();
+			return _f.scale() * gamma * sqr(sech(gamma*v));
+		}
+
+		T value_by_self(T v) const{
+			return max(_f.gamma() *(_f.scale() - sqr(v) / _f.scale()), numeric_limits<T>::epsilon());
+		}
+
+	private:
+		tanh_function<T>			_f;
+	};
+
+	template <typename T = double>
 	class sigmoid_function{
 	public:
 		static_assert(is_floating_point<T>::value, "The T should be float.");
@@ -115,7 +166,7 @@ namespace skynet{
 		}
 
 		T operator()(T v) const{
-			return  _scale * std::tanh(_gamma*v);
+			return  _scale/(1.0+exp(-_gamma * v));
 		}
 
 		T gamma() const							{ return _gamma; }
@@ -141,7 +192,7 @@ namespace skynet{
 		}
 
 		T value_by_self(T v) const{
-			return max(_f.gamma() *(_f.scale() - sqr(v) / _f.scale()), numeric_limits<T>::epsilon());
+			return max(_f.gamma() *(v - sqr(v) / _f.scale()), numeric_limits<T>::epsilon());
 		}
 
 	private:
@@ -149,54 +200,54 @@ namespace skynet{
 	};
 
 
-	template <typename T = double>
-	class fast_sigmoid_function{
-	public:
-		static_assert(is_floating_point<T>::value, "The T should be float.");
+	//template <typename T = double>
+	//class fast_tanh_function{
+	//public:
+	//	static_assert(is_floating_point<T>::value, "The T should be float.");
 
-		fast_sigmoid_function() : _scale(1.716), _gamma(0.66){}
+	//	fast_tanh_function() : _scale(1.716), _gamma(0.66){}
 
-		fast_sigmoid_function(T scale, T gamma): _scale(scale), _gamma(gamma){}
+	//	fast_tanh_function(T scale, T gamma): _scale(scale), _gamma(gamma){}
 
-		fast_sigmoid_function(const fast_sigmoid_function &rhs) : _gamma(rhs._gamma), _scale(rhs._scale){}
+	//	fast_tanh_function(const fast_tanh_function &rhs) : _gamma(rhs._gamma), _scale(rhs._scale){}
 
-		fast_sigmoid_function& operator=(const fast_sigmoid_function &rhs){
-			_gamma = rhs._gamma;
-			_scale = rhs._scale;
-			return *this;
-		}
+	//	fast_tanh_function& operator=(const fast_tanh_function &rhs){
+	//		_gamma = rhs._gamma;
+	//		_scale = rhs._scale;
+	//		return *this;
+	//	}
 
-		T operator()(T v) const{
-			return  _scale*_gamma*v/(1+abs(_gamma*v));
-		}
+	//	T operator()(T v) const{
+	//		return  _scale*_gamma*v/(1+abs(_gamma*v));
+	//	}
 
-		T gamma() const							{ return _gamma; }
-		void gamma(T v)							{ _gamma = v; }
+	//	T gamma() const							{ return _gamma; }
+	//	void gamma(T v)							{ _gamma = v; }
 
-		T scale() const							{ return _scale; }
-		void scale(T v)							{ _scale = v; }
+	//	T scale() const							{ return _scale; }
+	//	void scale(T v)							{ _scale = v; }
 
-	private:
-		T	_gamma;
-		T	_scale;
-	};
+	//private:
+	//	T	_gamma;
+	//	T	_scale;
+	//};
 
 
-	template <typename T>
-	class derivative<fast_sigmoid_function<T>>{
-	public:
-		derivative(fast_sigmoid_function<T> f): _f(f){}
+	//template <typename T>
+	//class derivative<fast_tanh_function<T>>{
+	//public:
+	//	derivative(fast_tanh_function<T> f): _f(f){}
 
-		//T operator()(T v) const{
-		//	auto gamma = _f.gamma();
-		//	return _f.scale() * gamma * sqr(sech(gamma*v));
-		//}
+	//	//T operator()(T v) const{
+	//	//	auto gamma = _f.gamma();
+	//	//	return _f.scale() * gamma * sqr(sech(gamma*v));
+	//	//}
 
-		T value_by_self(T v) const{
-			return max(_f.gamma()*_f.scale()*sqr(1-v/_f.scale()) , numeric_limits<T>::epsilon());
-		}
+	//	T value_by_self(T v) const{
+	//		return max(_f.gamma()*_f.scale()*sqr(1-v/_f.scale()) , numeric_limits<T>::epsilon());
+	//	}
 
-	private:
-		fast_sigmoid_function<T>			_f;
-	};
+	//private:
+	//	fast_tanh_function<T>			_f;
+	//};
 }                   

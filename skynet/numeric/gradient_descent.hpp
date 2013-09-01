@@ -131,7 +131,7 @@ namespace skynet{namespace numeric{
 				_end_point.resize(_model->w().size());
 				_end_point = _start_point - _g_k0;
 
-				auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 100);
+				auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
 				//_s = -0.01 * _g_k0;
 				_model->w(best_point);
 				_s = best_point - _start_point;
@@ -155,7 +155,7 @@ namespace skynet{namespace numeric{
 
 			_start_point.assign(_model->w());
 			_end_point = _start_point + d_k;
-			auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 100);
+			auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
 			_model->w(best_point);
 			_s = best_point - _start_point;
 

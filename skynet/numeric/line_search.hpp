@@ -76,7 +76,8 @@ namespace skynet{namespace numeric{
 #ifndef DISABLE_ASSERT
 		auto d1 = normalize(c_p-b_p);
 		auto d2 = normalize(c_p-a_p);
-		ASSERT(is_equal(abs(ublas::inner_prod(d1,d2)), 1.0, tau), "The a b c is not in the same line.");
+		auto dir = ublas::inner_prod(d1,d2);
+		ASSERT(is_equal(abs(dir), 1.0, tau), "The a b c is not in the same line.");
 #endif // !DISABLE_ASSERT
 
 		argument_type a(a_p.size());
@@ -121,12 +122,26 @@ namespace skynet{namespace numeric{
 			}
 		}
 
-		return (c+a)/2;
+		//返回最小值
+		//argument_type re(a.size());
+		//if (fa < fb){
+		//	if (fa < fc)
+		//		copy(a, re);
+		//	else
+		//		copy(c, re);
+		//}else{
+		//	if (fb < fc)
+		//		copy(b, re);
+		//	else
+		//		copy(c, re);
+		//}
+
+		return (a+c)/2;
 		//THROW_EXCEPTION(std::runtime_error("gold section search is not converged."));
 	}
 
 
-		template <typename F>
+	template <typename F>
 	typename unary_function_traits<F>::argument_type gold_section_search(
 		F f,
 		const typename unary_function_traits<F>::argument_type &a_p,

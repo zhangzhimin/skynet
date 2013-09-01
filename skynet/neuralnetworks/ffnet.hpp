@@ -66,7 +66,7 @@ namespace skynet{namespace nn{
 		};
 
 		///\brief	The hidden or output layer with transfer function template parameter.
-		template <typename F = sigmoid_function<>>
+		template <typename F = tanh_function<>>
 		class layer : public layer_base{
 		public:
 			layer(size_t size) :  _out(size+1), _y(size+1), _batch_size(0){}
@@ -75,7 +75,7 @@ namespace skynet{namespace nn{
 				_fun = f;
 			}
 
-			void init(){
+			virtual void init(){
 				//initialize the weights, it's random and small.
 				_weights.resize(_in.size(), _out.size()-1);
 				auto range = 2.4 / _weights.size1();
@@ -170,8 +170,123 @@ namespace skynet{namespace nn{
 			size_t				_batch_size;
 		};
 
+		template <typename F = sigmoid_function<>>
+		class sparse_layer: public layer_base{
+		public:
+			sparse_layer(size_t size) :  _out(size+1), _y(size+1), _batch_size(0), _local_error(size, 0.0),
+				_activaties(size), _sparseness(0.2), _beta(0.1){}
+
+			void transfer_function(F f){
+				_fun = f;
+			}
+
+			virtual void init(){
+				//initialize the weights, it's random and small.
+				_weights.resize(_in.size(), _out.size()-1);
+				auto range = 2.4 / _weights.size1();
+				std::uniform_real_distribution<double> random(-range, range);
+				std::mt19937_64 engine(static_cast<unsigned long>(std::rand()));
+				for (size_t r = 0; r < _weights.size1(); ++r){
+					for (size_t c = 0; c < _weights.size2(); ++c){
+						_weights(r, c) = random(engine);
+					}
+				}
+
+				ublas::zero_matrix<double> zero_mat(_weights.size1(), _weights.size2());
+				_dedws.resize(_weights.size1(), _weights.size2());
+				_dedws.assign(zero_mat);
+			}
+
+			virtual void in(const vectord &v){
+				_in = v;
+				_in[_in.size()-1] = 1.0;
+			}
+
+			virtual vectord out() const{
+				return _out;
+			}
+
+			virtual void front_calculate(){
+				ASSERT(_in[_in.size()-1] == 1.0, "The bais is not 1.0.");
+				auto y = ublas::prod(_in, _weights);
+				std::copy(y.begin(), y.end(), _y.begin());
+				transform(_y, _out, _fun);
+			}
+
+			virtual vectord back_propagate(const vectord &error){
+				_batch_size++;
+				//calculate local error
+				derivative<F> derivative_f(_fun);
+				for (size_t i = 0; i < error.size(); ++i){
+					_local_error[i] = (error[i] + _beta * (-_sparseness/_out[i] + (1-_sparseness)/(1-_out[i]))) *
+						derivative_f.value_by_self(_out[i]);
+				}
+				//calculate derivative errors
+				for (size_t r = 0; r < _weights.size1(); ++r){
+					for (size_t c = 0; c < _weights.size2(); ++c){
+						_dedws(r, c) -= _in[r] * _local_error[c];
+					}
+				}
+
+				auto  temp_error = ublas::prod(_weights, _local_error);
+				vectord next_error(_in.size()-1);
+				std::copy(temp_error.begin(), temp_error.end()-1, next_error.begin());
+				return next_error;
+			}
+
+			virtual vectord dedw(){
+				ASSERT(_batch_size != 0, "The backprogation is not excuted.");
+
+				auto scale = 1.0 / _batch_size;
+				_dedws *= scale;
+
+				return vectord(_dedws.data());
+			}
+
+			virtual vectord w() {
+				return vectord(_weights.data());
+			}
+
+			virtual void w(const vectord &v){
+				_weights = matrixd(_weights.size1(), _weights.size2(), v.data());
+			}
+
+			///\brief	Zero the derivative and the counter.
+			virtual void update(){
+				for (size_t r = 0; r < _dedws.size1(); ++r){
+					for (size_t c = 0; c < _dedws.size2(); ++c){
+						_dedws(r,c) = 0.0;
+					}
+				}
+				_batch_size = 0;
+			}
+
+			virtual size_t  size() const						{ return _out.size()-1; }
+
+			double sparseness() const									{ return _sparseness; }
+			void sparseness(double v)									{ _sparseness = v; }
+
+			double beta() const											{ return _beta; }
+			void beta(double v)											{ _beta = v; }
+
+		private:
+			F _fun;
+			vectord				_in;
+			matrixd				_weights;
+			vectord				_y;
+			vectord				_out;
+			vectord				_local_error;
+			matrixd				_dedws;
+			size_t				_batch_size;
+
+			vectord				_activaties;
+			double				_sparseness;
+			double				_beta;
+		};
+
 		///\brief	Implements the interface of numeric::model
 	public:
+
 
 		///\brief	Gets the weights of ffnet(shallow copy).
 		virtual vectord w(){
@@ -232,7 +347,7 @@ namespace skynet{namespace nn{
 			return mse;
 		}
 
-		
+
 	public:
 		ffnet(const self &rhs): _layers(rhs._layers), _input(rhs._input), _output(rhs._output), 
 			_epoch_num(rhs._epoch_num), _w(rhs._w), _dedw(rhs._dedw){}
@@ -266,7 +381,7 @@ namespace skynet{namespace nn{
 		size_t epoch_num()	const				{ return _epoch_num; }
 		///\brief	Sets the training epoch number.
 		void epoch_num(size_t v)				{ _epoch_num = v; }
-		
+
 		///\brief		Trains the ffnet
 		///\param [in] data	The traing data
 		///\param [in] opt	The optimizer based on gradient descent.

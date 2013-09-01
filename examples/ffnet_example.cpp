@@ -18,21 +18,21 @@ int main()
 	for (int i = 0; i < 50; ++i){
 		column(data.patterns, i) = column(iris_data[0], i);
 		column(data.targets, i)[0] = 1;
-		column(data.targets, i)[1] = 0;
+		column(data.targets, i)[1] = 0.2;
 		column(data.targets, i)[2] = 0;
 		column(data.patterns, i+50) = column(iris_data[1], i);
-		column(data.targets, i+50)[0] = 0;
+		column(data.targets, i+50)[0] = 0.2;
 		column(data.targets, i+50)[1] = 1;
-		column(data.targets, i+50)[2] = 0;
+		column(data.targets, i+50)[2] = 0.2;
 		column(data.patterns, i+100) = column(iris_data[2], i);
-		column(data.targets, i+100)[0] = 0;
-		column(data.targets, i+100)[1] = 0;
+		column(data.targets, i+100)[0] = 0.2;
+		column(data.targets, i+100)[1] = 0.2;
 		column(data.targets, i+100)[2] = 1;
 	}
 	
 	auto net = make_shared<ffnet>(4, 3);
-	net->add_layer(make_shared<ffnet::layer<>>(5));
-	net->add_layer(make_shared<ffnet::layer<>>(3));
+	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(5));
+	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(3));
 
 	optimizer_adaptor<bfgs<ffnet>> opt(net);
 
