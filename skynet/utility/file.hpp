@@ -48,6 +48,19 @@ namespace skynet{
 			f(it->path().string());
 		}
 	}
+    
+    std::vector<string> load_directory(const string &directory){
+		sys::path base_path(directory);
+		if (!sys::is_directory(base_path)){
+			THROW_EXCEPTION(std::runtime_error("It's invalid directory path."));
+		}
+        
+        std::vector<string>  files;
+		sys::recursive_directory_iterator it_end;
+		for (sys::recursive_directory_iterator it(base_path); it != it_end; ++it){
+			files.push_back(it->path().string());
+		}
+	}
 
 
 }

@@ -23,16 +23,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 =============================================================================*/
 
+#include <skynet/neuralnetworks/ffnet.hpp>
 
 namespace skynet{namespace nn{
 
 
 	class auto_encoder{
 	public:
-		
+		auto_encoder(size_t input_size, size_t hidden_size): _ffnet(input_size, output_size){
+			_ffnet.add_layer(make_shared<ffnet::sparse_layer<>>(hidden_size));
+		}
+
+		vectord code(){
+			_ffnet.
+		}
 
 	private:
-
+		ffnet	_ffnet;
 	};
 
 

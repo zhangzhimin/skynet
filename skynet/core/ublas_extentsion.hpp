@@ -43,7 +43,7 @@ namespace boost{namespace numeric{namespace ublas{
 		typedef typename M::const_reference								const_reference;
 		typedef typename M::iterator									iterator;
 		typedef typename M::const_iterator								const_iterator;
-		typedef typename size_t											size_type;
+		typedef size_t                                                  size_type;
 
 		typedef const vector_reference<const self_type>					const_closure_type;
 		typedef vector_reference<self_type>								closure_type;

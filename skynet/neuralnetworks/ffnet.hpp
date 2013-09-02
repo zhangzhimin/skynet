@@ -414,6 +414,10 @@ namespace skynet{namespace nn{
 			_layers.push_back(sp_layer);
 		}
 
+		std::vector<shared_ptr<layer_base>>	layers() const{
+			return _layers;
+		}
+
 		///\brief	Gets the training epoch number.
 		size_t epoch_num()	const				{ return _epoch_num; }
 		///\brief	Sets the training epoch number.
@@ -487,14 +491,4 @@ namespace skynet{namespace nn{
 		ml::database2<double, double>						_data;
 	};
     
-    
-    
-    class auto_encoder{
-    public:
-        
-    private:
-        
-    };
-
-
 }}
