@@ -18,6 +18,13 @@
 							}
 						},
 					}],
+
+					['OS=="mac"',{
+						'xcode_settings':{
+							'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
+							'CLANG_CXX_LIBRARY':'libc++',
+						},
+					}],
 				]
 			},
 			'Release':{
@@ -36,6 +43,13 @@
 							}
 						},
 					}],
+					
+					['OS=="mac"',{
+						'xcode_settings':{
+							'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
+							'CLANG_CXX_LIBRARY':'libc++',
+						},
+					}],
 				]
 			},
 		},	
@@ -47,7 +61,7 @@
 	],
 	'targets':[
 		{
-			'target_name' : 'skynet',
+			'target_name' : 'ffnet',
 			'type' : 'executable',
 			'include_dirs':['../',
 							'/usr/local/include',
@@ -55,16 +69,32 @@
 			'sources' : ['ffnet_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
 
-			'conditions':[
-				['OS=="mac"',{
-					'xcode_settings':{
-						'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
-						'CLANG_CXX_LIBRARY':'libc++',
-#'OTHER_FLAGS': ['-std=c++11', '-stdlib=libc++'],
-#						'OTHER_LDFLAS': ['-stdlib=libc++'],
-					},
-				}],
-			],
+#			'conditions':[
+#				['OS=="mac"',{
+#					'xcode_settings':{
+#						'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
+#						'CLANG_CXX_LIBRARY':'libc++',
+#					},
+#				}],
+#],
+		},
+		{
+			'target_name' : 'auto_encoder',
+			'type' : 'executable',
+			'include_dirs':['../',
+							'/usr/local/include',
+							],
+			'sources' : ['auto_encoder_example.cpp'],
+			'cflags_cc': ['-std=c++11'],
+
+#			'conditions':[
+#				['OS=="mac"',{
+#					'xcode_settings':{
+#						'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
+#						'CLANG_CXX_LIBRARY':'libc++',
+#					},
+#				}],
+#			],
 		},
 	]
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <skynet\config.hpp>
-#include <skynet\core\array.hpp>
-#include <skynet\cv\pixel.hpp>
+#include <skynet/config.hpp>
+#include <skynet/core/array.hpp>
+#include <skynet/cv/pixel.hpp>
 
 #include <stdexcept>
-#include <boost\any.hpp>
+#include <boost/any.hpp>
 
 
 namespace skynet{namespace cv{
@@ -131,7 +131,7 @@ namespace skynet{namespace cv{
 
 	image_bgr gray2bgr(const image_gray &im_gray){
 		image_bgr im_bgr(im_gray.width(), im_gray.height());
-		transform(im_gray, im_bgr, [](const byte &e){
+		transform(im_gray, im_bgr, [](const byte &e)->bgr{
 			bgr v = {e, e, e};
 			return v;
 		});

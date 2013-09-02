@@ -486,6 +486,15 @@ namespace skynet{namespace nn{
 
 		ml::database2<double, double>						_data;
 	};
+    
+    
+    
+    class auto_encoder{
+    public:
+        
+    private:
+        
+    };
 
 
 }}

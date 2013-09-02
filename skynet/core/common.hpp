@@ -1,12 +1,8 @@
-******************************************************************************
-Created By : Zhang Zhimin
-Created On : 2012917
-Purpose    :  
-********************************************************************************
+
 
 #pragma once
 
-#include <skynetutilitytag.hpp>
+#include <skynet/utility/tag.hpp>
 
 #pragma warning(disable : 4018)
 #pragma warning(disable : 4244)
@@ -42,7 +38,7 @@ namespace skynet {
 
 		auto temp = pos;
 		for (int i = 0; i < extent_type::dim; ++i){
-			size_t k = temp  size[i];
+			size_t k = temp / size[i];
 			index[i] = temp - k * size[i];
 			temp = k;
 		}
@@ -73,7 +69,7 @@ namespace skynet {
 		template <typename M>
 		static void do_it(M &mat, const typename M::value_type &value, const size_t thickness = 1){
 			auto size = mat.extent();
-			ASSERT( >= thickness, "the thickness is more than size");
+			ASSERT(size[0] >= thickness && size[1] >= thickness && size[2] >= thickness, "the thickness is more than size");
 
 			for (int t = 0; t < thickness; ++t){
 				for (int i = 0; i < size[1]; ++i){

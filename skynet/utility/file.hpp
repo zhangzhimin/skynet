@@ -25,13 +25,16 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <filesystem>
+//the mac and linux  not support
+//#include <filesystem>
+
+#include <boost/filesystem.hpp>
 
 #include <skynet/config.hpp>
 
 namespace skynet{
 
-	namespace sys = std::tr2::sys;
+	namespace sys = boost::filesystem;
 
 	template <typename Fun>
 	void load_directory(const string &directory, Fun f){

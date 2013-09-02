@@ -15,8 +15,8 @@ Purpose    : Implements the std::array
 
 namespace skynet{
 
-	/
-	template <typename T, typename size_t D, typename B = shared_buffer<T>>
+	
+	template <typename T, size_t D, typename B = shared_buffer<T>>
 	class multi_array: array_express<multi_array<T, D, B>>{
 	public:
 		typedef T								value_type; 
@@ -143,10 +143,10 @@ namespace skynet{
 	};
 
 
-	template <typename M, typename byte bit_mask_>
+	template <typename M, byte bit_mask_>
 	class bit_array: public array_express<bit_array<M,bit_mask_>>{
 	public:
-		template <typename bool is_const>
+		template <bool is_const>
 		class bit;
 		static_assert(std::is_arithmetic<typename M::value_type>::value, "the value_type should be arithmetic.");
 		static_assert(bit_mask_ != 0, "the bit mask should not be zero.");
@@ -165,33 +165,31 @@ namespace skynet{
 		typedef index_iterator<type>                    iterator;
 		typedef index_iterator<const type>              const_iterator;
 
-		template <typename bool is_const>
+		template <bool is_const>
 		class bit{
 		public:
 			typedef typename std::conditional<is_const, const byte &, byte &>::type   Ref;
 
 			operator bool() const {
-				return (mref_value&bit_mask) == bit_mask;
+				return (_ref_value&bit_mask) == bit_mask;
 			}
-
-			 bit &operator=(
-
+            
 			bit &operator=(const bool &b){
 				static_assert(!std::is_const<Ref>::value, "the operator= is just for non const.");
 				if(b){
-					mref_value |= bit_mask;
+					_ref_value |= bit_mask;
 				}
 				else{
-					mref_value &= ~bit_mask;
+					_ref_value &= ~bit_mask;
 				}
 
 				return *this;
 			}
 
-			explicit bit(Ref v): mref_value(v) {}
+			explicit bit(Ref v): _ref_value(v) {}
 
 		private:
-			Ref                mref_value;
+			Ref                _ref_value;
 		};
 
 		bit_array(){}
@@ -218,10 +216,6 @@ namespace skynet{
 			ASSERT(_mat.extent() == extent, "the extent is not match.");
 		}
 
-		void set_all_zero(){
-			LOG_WARNING("The bit std::array does not exute set all zero operation, make sure it has been set zero.");
-		}
-
 		const_iterator begin() const                    { return const_iterator(const_cast<type *>(this), 0); }
 		const_iterator end() const                      { return const_iterator(const_cast<type *>(this), size()); }
 		iterator begin()                                { return iterator(this, 0); }
@@ -233,7 +227,7 @@ namespace skynet{
 		M                   _mat;
 	};
 
-	template <typename T, typename size_t D, typename Hash = boost::hash<size_t>>
+	template <typename T, size_t D, typename Hash = boost::hash<size_t>>
 	class hash_array: array_express<hash_array<T, D, Hash>>{
 	public:
 		typedef hash_array                             type;
@@ -243,8 +237,8 @@ namespace skynet{
 		typedef T &                                     reference;
 		typedef const T &                               const_reference;
 
-		typedef typename point<int, 3>                  index_type;
-		typedef typename point<int, 3>                  extent_type;
+		typedef point<int, 3>                  index_type;
+		typedef point<int, 3>                  extent_type;
 
 		hash_array(const T &value) : _default_value(value) {}
 

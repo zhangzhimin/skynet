@@ -1,66 +1,67 @@
 #pragma once
 
 #include <fstream>
-#include <filesystem>
 #include <stdexcept>
 #include <cassert>
 
-#include <skynet\cv\extension\image.hpp>
-#include <skynet\utility\exception.hpp>
+#include <skynet/cv/extension/image.hpp>
+#include <skynet/utility/exception.hpp>
 
 namespace skynet{ namespace cv{
-
-
-	struct bmp_file_header{
-		uint16_t		signature;
-		uint32_t		file_size;
-		uint16_t		reserved1;
-		uint16_t		reserved2;
-		uint32_t		raw_data_offset;
-	};
-
-	struct bmp_info_header{};
-
-	struct dib_header : public bmp_info_header{		
-		/// The size of this header:
-		/// - 40 bytes for Windows V3 header
-		/// - 12 bytes for OS/2 V1 header
-		uint32_t		header_size;
-
-		/// The bitmap width in pixels ( signed integer ).
-		int32_t			width;
-
-		/// The bitmap height in pixels ( signed integer ).
-		int32_t			height;
-
-		uint16_t		planes_of_color;
-
-		/// The number of bits per pixel, which is the color depth of the image.
-		/// Typical values are 1, 4, 8, 16, 24 and 32.
-		uint16_t		bits_per_pixel;
-
-		/// The compression method being used. See above for a list of possible values.
-		uint32_t		compression;
-
-		/// The image size. This is the size of the raw bitmap data (see below), 
-		/// and should not be confused with the file size.
-		uint32_t		image_size;
-
-		/// The horizontal resolution of the image. (pixel per meter, signed integer)
-		int32_t			horizontal_resolution;
-
-		/// The vertical resolution of the image. (pixel per meter, signed integer)
-		int32_t			vertical_resolution;
-
-		/// The number of colors in the color palette, or 0 to default to 2^n - 1.
-		uint32_t        num_colors;
-
-		/// The number of important colors used, or 0 when every color is important; 
-		/// generally ignored.
-		uint32_t		num_important_colors;
-	};
+	
 
 	namespace io{
+        
+        struct bmp_file_header{
+            uint16_t		signature;
+            uint32_t		file_size;
+            uint16_t		reserved1;
+            uint16_t		reserved2;
+            uint32_t		raw_data_offset;
+        };
+        
+        struct bmp_info_header{};
+        
+        struct dib_header : public bmp_info_header{
+            /// The size of this header:
+            /// - 40 bytes for Windows V3 header
+            /// - 12 bytes for OS/2 V1 header
+            uint32_t		header_size;
+            
+            /// The bitmap width in pixels ( signed integer ).
+            int32_t			width;
+            
+            /// The bitmap height in pixels ( signed integer ).
+            int32_t			height;
+            
+            uint16_t		planes_of_color;
+            
+            /// The number of bits per pixel, which is the color depth of the image.
+            /// Typical values are 1, 4, 8, 16, 24 and 32.
+            uint16_t		bits_per_pixel;
+            
+            /// The compression method being used. See above for a list of possible values.
+            uint32_t		compression;
+            
+            /// The image size. This is the size of the raw bitmap data (see below),
+            /// and should not be confused with the file size.
+            uint32_t		image_size;
+            
+            /// The horizontal resolution of the image. (pixel per meter, signed integer)
+            int32_t			horizontal_resolution;
+            
+            /// The vertical resolution of the image. (pixel per meter, signed integer)
+            int32_t			vertical_resolution;
+            
+            /// The number of colors in the color palette, or 0 to default to 2^n - 1.
+            uint32_t        num_colors;
+            
+            /// The number of important colors used, or 0 when every color is important; 
+            /// generally ignored.
+            uint32_t		num_important_colors;
+        };
+        
+        
 		namespace detail{
 			auto write_header = [](const bmp_file_header &file_header, const dib_header &info, std::ostream &fs){
 				//write file header
@@ -86,8 +87,8 @@ namespace skynet{ namespace cv{
 
 
 		image_any read_bmp(const std::string &filename, bmp_info_header &info){
-			std::tr2::sys::path filepath(filename);
-			ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
+			//std::tr2::sys::path filepath(filename);
+			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
 			std::ifstream filestream(filename, std::ios::binary);
 			if (!filestream.good()){
 				THROW_EXCEPTION(std::runtime_error("Failed to open the file."));
@@ -165,8 +166,8 @@ namespace skynet{ namespace cv{
 		}
 
 		void write_bmp(const multi_array<byte, 2> &image, const std::string &filename){
-			std::tr2::sys::path filepath(filename);
-			ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
+			//std::tr2::sys::path filepath(filename);
+			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
 
 			bmp_file_header file_header;
 			file_header.signature = 0x4d42;
@@ -198,7 +199,7 @@ namespace skynet{ namespace cv{
 				detail::write_header(file_header, image_info, filestream);
 				//write color table
 				for (int i = 0; i < 256; ++i){
-					cv::bgra v = {i, i, i, 0};
+					cv::bgra v = {byte(i), byte(i), byte(i), 0};
 					filestream.write((char *)&v, 4);
 				}
 				ASSERT(uint32_t(filestream.tellp()) == file_header.raw_data_offset, "");
@@ -224,7 +225,7 @@ namespace skynet{ namespace cv{
 				ASSERT(uint32_t(filestream.tellp()) == 54, "");
 				//write color table
 				for (int i = 0; i < 256; ++i){
-					cv::bgra v = {i, i, i, 0};
+					cv::bgra v = {byte(i), byte(i), byte(i), 0};
 					filestream.write((char *)&v, 4);
 				}
 				ASSERT(uint32_t(filestream.tellp()) == file_header.raw_data_offset, "");
@@ -237,8 +238,8 @@ namespace skynet{ namespace cv{
 		}
 
 		void write_bmp(const multi_array<bgr, 2> &image, const std::string &filename){
-			std::tr2::sys::path filepath(filename);
-			ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
+			//std::tr2::sys::path filepath(filename);
+			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
 
 			bmp_file_header file_header;
 			file_header.signature = 0x4d42;
@@ -301,8 +302,8 @@ namespace skynet{ namespace cv{
 
 
 		void write_bmp(const image_any &any, const std::string &filename){
-			std::tr2::sys::path filepath(filename);
-			ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
+			//std::tr2::sys::path filepath(filename);
+			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
 
 			if (any.type() == image_type::gray8){
 				auto image = image_cast<array2b>(any);

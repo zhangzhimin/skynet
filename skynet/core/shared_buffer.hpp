@@ -72,7 +72,8 @@ namespace skynet{
 		shared_buffer() : _size(1), _p(_alloc.allocate(1)){}
 
 		shared_buffer(size_t  size) : _size(size), _p(_alloc.allocate(size)){
-			if (!std::has_trivial_constructor<value_type>::value){
+            //mac and linux not support std::has_trivial_constructor
+			if (!boost::has_trivial_constructor<value_type>::value){
 				auto temp = _p;
 				for (size_t i = 0; i < _size; ++i){
 					_alloc.construct(temp++);
