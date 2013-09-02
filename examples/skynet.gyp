@@ -23,6 +23,7 @@
 						'xcode_settings':{
 							'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
 							'CLANG_CXX_LIBRARY':'libc++',
+							'ARCHS': ['x86_64' ],
 						},
 					}],
 				]
@@ -48,6 +49,7 @@
 						'xcode_settings':{
 							'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
 							'CLANG_CXX_LIBRARY':'libc++',
+							'ARCHS': [ 'x86_64' ],
 						},
 					}],
 				]
@@ -68,15 +70,6 @@
 							],
 			'sources' : ['ffnet_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
-
-#			'conditions':[
-#				['OS=="mac"',{
-#					'xcode_settings':{
-#						'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
-#						'CLANG_CXX_LIBRARY':'libc++',
-#					},
-#				}],
-#],
 		},
 		{
 			'target_name' : 'auto_encoder',
@@ -84,17 +77,17 @@
 			'include_dirs':['../',
 							'/usr/local/include',
 							],
+			'library_dirs':['/usr/local/lib'],
 			'sources' : ['auto_encoder_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
 
-#			'conditions':[
-#				['OS=="mac"',{
-#					'xcode_settings':{
-#						'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
-#						'CLANG_CXX_LIBRARY':'libc++',
-#					},
-#				}],
-#			],
+			'conditions':[
+				['OS=="mac"',{
+					'link_settings':{
+						'libraries':['libboost_system.a', 'libboost_filesystem.a'],
+					},
+				}],
+			],
 		},
 	]
 }
