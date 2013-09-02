@@ -65,27 +65,41 @@
 		{
 			'target_name' : 'ffnet',
 			'type' : 'executable',
-			'include_dirs':['../',
-							'/usr/local/include',
-							],
 			'sources' : ['ffnet_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
+
+			'conditions':[
+				['OS=="mac"',{
+					'include_dirs':['../', '/usr/local/include'],
+					'library_dirs':['/usr/local/lib'],
+					'link_settings':{
+						'libraries':['libboost_system.a', 'libboost_filesystem.a'],
+					},
+				}],
+				['OS=="win"',{
+					'include_dirs':['../', '$(BOOST_INCLUDE_DIR)'],
+					'library_dirs':['$(BOOST_LIBRARY_DIR)'],
+				}],
+			],
 		},
 		{
 			'target_name' : 'auto_encoder',
 			'type' : 'executable',
-			'include_dirs':['../',
-							'/usr/local/include',
-							],
-			'library_dirs':['/usr/local/lib'],
+		
 			'sources' : ['auto_encoder_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
 
 			'conditions':[
 				['OS=="mac"',{
+					'include_dirs':['../', '/usr/local/include'],
+					'library_dirs':['/usr/local/lib'],
 					'link_settings':{
 						'libraries':['libboost_system.a', 'libboost_filesystem.a'],
 					},
+				}],
+				['OS=="win"',{
+					'include_dirs':['../', '$(BOOST_INCLUDE_DIR)'],
+					'library_dirs':['$(BOOST_LIBRARY_DIR)'],
 				}],
 			],
 		},

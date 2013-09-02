@@ -28,18 +28,26 @@ THE SOFTWARE.
 namespace skynet{namespace nn{
 
 
-	class auto_encoder{
+	///\brief	Implement the auto encoder, a special ffnet.
+	class auto_encoder : ffnet{
 	public:
-		auto_encoder(size_t input_size, size_t hidden_size): _ffnet(input_size, output_size){
-			_ffnet.add_layer(make_shared<ffnet::sparse_layer<>>(hidden_size));
+		auto_encoder(size_t input_size, size_t hidden_size): ffnet(input_size, output_size){
+			this->add_layer(make_shared<ffnet::sparse_layer<>>(hidden_size));
 		}
 
-		vectord code(){
-			_ffnet.
+		vectord status(){
+			return hidden_layer()->w();
 		}
 
-	private:
-		ffnet	_ffnet;
+		shared_ptr<ffnet::sparse_layer_base> hidden_layer(){
+			return this->layers()->front();
+		};
+	};
+
+
+	class stacked_auto_encode{
+
+
 	};
 
 

@@ -27,7 +27,6 @@ THE SOFTWARE.
 
 //the mac and linux  not support
 //#include <filesystem>
-
 #include <boost/filesystem.hpp>
 
 #include <skynet/config.hpp>
