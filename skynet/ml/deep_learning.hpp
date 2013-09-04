@@ -27,20 +27,30 @@ THE SOFTWARE.
 
 namespace skynet{namespace ml{
 
+
 	///\brief	The the layer of deep learning net.
 	class deep_layer{
 	public:
-		virtual vectord	status() = 0;
-	};
+		///\brief	Gets the encode status by the model.
+		virtual vectord	status(const vectord &input) = 0;
 
+		///\brief	
+	};
+	
+
+	///\brief	The adaptor of the deep layer
 	template <typename Layer>
 	class deep_layer_adaptor : private deep_layer{
 	public:
-		virtual vectord status{
-			return Layer::status();
+
+		///\brief	Gets the encode status by the model.
+		virtual vectord status(const vectord &input){
+			return Layer::status(input);
 		}
 	};
 
+
+	///\brief	The networks of deep learning
 	class deep_learning_net{
 	public:
 

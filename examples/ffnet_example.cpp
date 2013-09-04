@@ -34,7 +34,7 @@ int main()
 	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(20));
 	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(3));
 
-	optimizer_adaptor<bfgs<ffnet>> opt(net);
+	optimizer_adaptor<lbfgs<ffnet>> opt(net);
 
 	net->epoch_num(500);
 	net->train(data, opt); 

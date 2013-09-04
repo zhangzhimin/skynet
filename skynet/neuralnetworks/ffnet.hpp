@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <skynet/ml/utility.hpp>
+#include <skynet/ml/common.hpp>
 #include <skynet/core/function.hpp>
 #include <skynet/utility/exception.hpp>
 #include <skynet/numeric/gradient_descent.hpp>

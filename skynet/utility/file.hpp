@@ -56,9 +56,12 @@ namespace skynet{
         
         std::vector<string>  files;
 		sys::recursive_directory_iterator it_end;
+		
 		for (sys::recursive_directory_iterator it(base_path); it != it_end; ++it){
 			files.push_back(it->path().string());
 		}
+
+		return files;
 	}
 
 

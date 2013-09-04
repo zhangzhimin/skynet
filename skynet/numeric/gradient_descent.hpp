@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <skynet/utility/math.hpp>
 #include <skynet/numeric/line_search.hpp>
 
+
 namespace skynet{namespace numeric{
 
 	///\brief Rprop algorithm, http://en.wikipedia.org/wiki/Rprop
@@ -102,7 +103,7 @@ namespace skynet{namespace numeric{
 	};
 
 
-	///\brief	Implements the BFGS algorithm. http://en.wikipedia.org/wiki/BFGS
+	///\brief	Implements the BFGS algorithm. http://en.wikipedia.org/wiki/BFGS, it's not effective.
 	template <typename Model>
 	class bfgs{
 	public:
@@ -174,5 +175,132 @@ namespace skynet{namespace numeric{
 		vector									_end_point;
 		model_function<model>					_model_fun;
 	};
+
+
+	///\brief	Implements the limited memory BFGS algorithm. http://en.wikipedia.org/wiki/LBFGS, it's not effective.
+	template <typename Model>
+	class lbfgs{
+	public:
+		typedef Model								model;
+		typedef typename model::vector				vector;
+		typedef typename vector::value_type			value_type;
+		typedef ublas::matrix<value_type>			matrix;
+
+		lbfgs(shared_ptr<model> model) : _model(model), _first(true), _model_fun(_model), _hist_num(100){}
+
+		///\brief	Iterates once
+		void step(){
+			//initialize the vector and matrix size, and the first derivative.
+			if (_first){
+				//	_h0.resize(_model->w().size(), 1.0);
+
+				_g_k0.resize(_model->dedw().size());
+				_g_k1.resize(_model->dedw().size());
+				_g_k0.assign(_model->dedw());
+				_point_old.resize(_model->w().size());
+				_point_old.assign(_model->w());
+
+				auto end_point = _point_old - _g_k0;
+				auto best_point = gold_section_search(_model_fun, _point_old, end_point, 1e-3, 5);
+				_model->w(best_point);
+				_first = false;
+				return;
+			}
+
+			_g_k1.assign(_model->dedw());
+			vector y = _g_k1 - _g_k0;
+			vector s = _model->w() - _point_old; 
+			push_info(y,s);
+
+			_point_old.assign(_model->w());
+			auto dir = get_direction();
+			auto end_point = _point_old + dir;
+			auto best_point = gold_section_search(_model_fun, _point_old, end_point, 1e-3, 5);
+			_model->w(best_point);
+			_g_k0.assign(_g_k1);
+		}
+
+	private:
+		void push_info(const vector &y, const vector &s){
+			auto sy = inner_prod(s, y);
+
+			if (sy < 1e-10)	return;
+
+			_ss.push_back(s);
+			_ys.push_back(y);
+			auto rho = 1.0/sy;
+			_rhos.push_back(rho);
+			if (_ss.size() > _hist_num){
+				_ss.pop_front();
+				_ys.pop_front();
+				_rhos.pop_front();
+			}
+
+			_hdiag = sy / inner_prod(y,y);
+		}
+
+		vector get_direction(){
+			vector q(_g_k1.size());
+			q.assign(-1 * _g_k1);
+
+			if (_ss.empty())
+				return q;
+
+			std::deque<value_type> alphas(_ss.size());
+			for (ptrdiff_t i = _ss.size()-1; i >= 0; --i){
+				alphas[i] = _rhos[i] * inner_prod(_ss[i], q);
+				q -= alphas[i] * _ys[i];
+			}
+			q *= _hdiag;
+			for (size_t i = 0; i < _ss.size(); ++i){
+				value_type beta = _rhos[i] * inner_prod(_ys[i], q);
+				q += (alphas[i]-beta) * _ss[i];
+			}
+
+			return q;
+			//auto y_it = _ys.begin();
+			//auto s_it = _ss.begin();
+			//auto rho_it = _rhos.begin();
+			//for (;	y_it != _ys.end(); ++y_it, ++s_it, ++rho_it)
+			//{
+			//	auto  alpha = (*rho_it) * ublas::inner_prod(*s_it, q);
+			//	q = q - alpha * (*y_it);
+			//	alphas.push_back(alpha);
+			//}
+
+			////vector z(q.size());
+			////z = prod(_h0, q);
+			//q *= 0.1;
+			//auto y_rit = _ys.rbegin();
+			//auto s_rit = _ss.rbegin();
+			//auto rho_rit = _rhos.rbegin();
+			//auto alpha_rit = alphas.rbegin();
+			//for (; y_rit != _ys.rend(); ++y_rit, ++s_rit, ++rho_rit, ++alpha_rit)
+			//{
+			//	value_type beta = (*rho_rit) * ublas::inner_prod(*y_rit, q);
+			//	q = q + (*alpha_rit - beta) * (*s_rit);
+			//}
+
+			//return -1 * q;
+		}
+
+	private:
+		shared_ptr<model>						_model;
+		//ublas::diagonal_matrix<value_type>		_h0;
+		vector									_g_k0;
+		vector									_g_k1;
+		bool									_first;
+
+		value_type								_hdiag;
+		value_type								_threshold;
+		size_t									_hist_num;
+		std::deque<vector>						_ss;
+		std::deque<vector>						_ys;
+		std::deque<double>						_rhos;
+
+		vector									_point_old;
+		model_function<model>					_model_fun;
+	};
+
 
 }}

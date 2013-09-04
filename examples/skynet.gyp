@@ -70,15 +70,10 @@
 
 			'conditions':[
 				['OS=="mac"',{
-					'include_dirs':['../', '/usr/local/include'],
-					'library_dirs':['/usr/local/lib'],
-					'link_settings':{
-						'libraries':['libboost_system.a', 'libboost_filesystem.a'],
-					},
+					'include_dirs':['../', '/usr/local/include'],				
 				}],
 				['OS=="win"',{
 					'include_dirs':['../', '$(BOOST_INCLUDE_DIR)'],
-					'library_dirs':['$(BOOST_LIBRARY_DIR)'],
 				}],
 			],
 		},
@@ -88,6 +83,7 @@
 		
 			'sources' : ['auto_encoder_example.cpp'],
 			'cflags_cc': ['-std=c++11'],
+			'library_dirs':['$(BOOST_LIBRARY_DIR)'],
 
 			'conditions':[
 				['OS=="mac"',{
@@ -99,7 +95,11 @@
 				}],
 				['OS=="win"',{
 					'include_dirs':['../', '$(BOOST_INCLUDE_DIR)'],
-					'library_dirs':['$(BOOST_LIBRARY_DIR)'],
+					'msvs_settings': {
+						'VCLinkerTool': {
+							'AdditionalLibraryDirectories': ['$(BOOST_LIBRARY_DIR)'],							 
+						},
+					},
 				}],
 			],
 		},
