@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 
 namespace skynet{namespace numeric{
-	
+
 
 	///\brief Rprop algorithm, http://en.wikipedia.org/wiki/Rprop
 	template <typename M>
@@ -210,6 +210,7 @@ namespace skynet{namespace numeric{
 			///do none, but some model  need do this, make sure the derivative is right.
 			m(start_point);
 			vector g0 = m.derivative(start_point);
+			//vector point = backtracking_line_search(m, point_old, -1*g0);
 			vector point = golden_section_search(m, point_old, point_old - g0, 1e-3, 10);
 
 			for (size_t i = 0; i < _iteration_num; ++i){
@@ -224,6 +225,7 @@ namespace skynet{namespace numeric{
 				push_info(y, s);
 				point_old.assign_temporary(point);
 				auto dir = get_direction(g1);
+				//point = backtracking_line_search(m, point_old, dir);
 				point = golden_section_search(m, point_old, point_old+dir,1e-3, 10);
 				g0.assign_temporary(g1);
 			}

@@ -35,7 +35,7 @@
 						'msvs_settings':{
 							'VCCLCompilerTool':{					
 								'Optimization': '2',
-								'WarningLevel': '4',
+								'WarningLevel': '3',
 								#	'WarnAsError': 'true',
 								'RuntimeLibrary': '0', # 1 :MTD
 							},

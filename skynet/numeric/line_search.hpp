@@ -34,7 +34,7 @@ namespace skynet{namespace numeric{
 
 	using namespace boost::numeric::ublas;
 
-	
+
 	///\brief				Implements the gold section search algorithm,
 	///						http://en.wikipedia.org/wiki/Golden_section_search
 	///\param[in] f			The criterion function which whil be opimized.
@@ -123,9 +123,37 @@ namespace skynet{namespace numeric{
 	template <typename F>
 	typename unary_function_traits<F>::argument_type backtracking_line_search(
 		F f,
+		const typename unary_function_traits<F>::argument_type &start_point,
 		const typename unary_function_traits<F>::argument_type &direction,
-		double tau = 0.8, double c1 = 1e-4, double c2 = 0.9)
+		double tau = 0.8, double c1 = 1e-4, double c2 = 0.9, size_t max_iteration = 10)
 	{
+		typedef typename unary_function_traits<F>::argument_type	argument_type;
+		ASSERT(c2 > c1, "c2 must be greater than c1.");
 
+		argument_type	point(start_point.size());
+		point.assign(start_point);
+		auto value_old = f(point);
+		auto derivative_old = f.derivative(point);
+
+		double step_scale = 1.0;
+		for (size_t i = 0; i < max_iteration; ++i, step_scale *= tau){
+			point = start_point + step_scale * direction;
+			auto value = f(point);
+			argument_type derivative(point.size());
+			derivative.assign(f.derivative(point));
+
+			auto pf = inner_prod(direction, derivative_old);
+			//wolfe condition
+			if (value <= value_old + c1 * step_scale * pf){
+				if (inner_prod(direction, derivative) >= c2 * pf){
+					return point;
+				}
+			}
+
+			derivative_old.assign_temporary(derivative);
+			value_old = value;
+		}
+
+		return point;
 	}
 }}
