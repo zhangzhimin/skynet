@@ -29,63 +29,67 @@ THE SOFTWARE.
 
 namespace skynet{namespace numeric{
 
+
 	///\brief	The interface of the model which has derivative function.
-	template <typename Vector = vectord>
-	class model{
-	public:
-		typedef	Vector							vector;
-		typedef typename vector::value_type		value_type;
+	//template <typename Vector = vectord>
+	//class model{
+	//public:
+	//	typedef	Vector							vector;
+	//	typedef typename vector::value_type		value_type;
 
-		///\brief	Gets the derivative of the weights on the Error.
-		virtual vector dedw() = 0;
-		
-		///\brief	Gets the weights of the model.
-		virtual vector w() = 0;
+	//	///\brief	Gets the derivative of the weights on the Error.
+	//	virtual vector derivative(const vector &) = 0;
 
-		///\brief	Sets the weights of the model.
-		virtual void w(const vector &) = 0;
+	//	virtual value_type operator()(const vector &) = 0;
+	//};
 
-		virtual value_type error(const vector &) = 0;
-	};
 
+	///\brief	Adapte the model to function with derivative.
+	//template <typename Model>
+	//class model_function{
+	//public:
+	//	typedef Model		model;
+	//	typedef typename model::vector			vector;
+	//	typedef typename model::value_type		value_type;
+
+	//	model_function(shared_ptr<model> sp_model): _sp_model(sp_model){}
+
+	//	///\brief	Gets the function result.
+	//	value_type operator()(const vector &input){
+	//		return _sp_model->error(input);
+	//	}
+
+	//	///\brief	Gets the function derivative, the function should be invoked after operator().
+	//	///			Because the input are unused.
+	//	vector	derivative(const vector &input){
+	//		return _sp_model->dedw();
+	//	}
+
+	//private:
+	//	shared_ptr<model>		_sp_model;
+	//};
+
+	///\brief The interface of the optimizer_base.
 	template <typename Model>
-	class model_function{
+	class optimizer_base{
 	public:
-		typedef Model		model;
-		typedef typename model::vector			vector;
-		typedef typename model::value_type		value_type;
-
-		model_function(shared_ptr<model> sp_model): _sp_model(sp_model){}
-
-		value_type operator()(const vector &input){
-			return _sp_model->error(input);
-		}
-
-	private:
-		shared_ptr<model>		_sp_model;
-	};
-	
-	///\brief The interface of the optimizer.
-	class optimizer{
-	public:
+		typedef Model								model;
+		typedef typename model::vector				vector;
 		///\brief	Iterates once.
-		virtual void step() = 0;
+		virtual vector optimize(model &m, const vector &) = 0;
 	};
 
-	///\brief	The adaptor of the optimizer
+	///\brief	The adaptor of the optimizer_base
 	template <typename Opt>
-	class optimizer_adaptor: public optimizer, public Opt{
+	class optimizer_adaptor: public optimizer_base<typename Opt::model>, public Opt{
 	public:
-		typedef Opt							optimizer;
-		typedef typename optimizer::model	model;
+		typedef typename Opt::model					model;
+		typedef typename model::vector				vector;
 		
-
-		///\brief Constructs by the model
-		optimizer_adaptor(shared_ptr<model> sp_model) : Opt(sp_model){}
-
+	//	optimizer_adaptor(): Opt(){}
 		///\brief	Initializes
-		virtual void step(){
-			Opt::step();
+		virtual vector optimize(model &m, const vector &start_point){
+			return Opt::optimize(m, start_point);
 		}
 
 	};

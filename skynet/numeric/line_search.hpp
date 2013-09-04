@@ -34,35 +34,16 @@ namespace skynet{namespace numeric{
 
 	using namespace boost::numeric::ublas;
 
-	//double phi = (1 + Math.sqrt(5)) / 2;
-	//double resphi = 2 - phi;
-
-	//// a and c are the current bounds; the minimum is between them.
-	//// b is a center point
-	//// f(x) is some mathematical function elsewhere defined
-	//// a corresponds to x1; b corresponds to x2; c corresponds to x3
-	//// x corresponds to x4
-
-	//public double goldenSectionSearch(double a, double b, double c, double tau) {
-	//	double x;
-	//	if (c - b > b - a)
-	//		x = b + resphi * (c - b);
-	//	else
-	//		x = b - resphi * (b - a);
-	//	if (Math.abs(c - a) < tau * (Math.abs(b) + Math.abs(x))) 
-	//		return (c + a) / 2; 
-	//	assert(f(x) != f(b));
-	//	if (f(x) < f(b)) {
-	//		if (c - b > b - a) return goldenSectionSearch(b, x, c, tau);
-	//		else return goldenSectionSearch(a, x, b, tau);
-	//	}
-	//	else {
-	//		if (c - b > b - a) return goldenSectionSearch(a, b, x, tau);
-	//		else return goldenSectionSearch(x, b, c, tau);
-	//	}
-	//}
+	
+	///\brief				Implements the gold section search algorithm,
+	///						http://en.wikipedia.org/wiki/Golden_section_search
+	///\param[in] f			The criterion function which whil be opimized.
+	///\param[in] a_p		The initial a point.
+	///\param[in] b_p		The initial b point.
+	///\param[in] c_p		The initial c point.
+	///\param[in] tau		The precision
 	template <typename F>
-	typename unary_function_traits<F>::argument_type gold_section_search(
+	typename unary_function_traits<F>::argument_type golden_section_search(
 		F f,
 		const typename unary_function_traits<F>::argument_type &a_p,
 		const typename unary_function_traits<F>::argument_type &b_p,
@@ -101,48 +82,33 @@ namespace skynet{namespace numeric{
 			auto fx = f(x);
 			if (fx < fb){
 				if (norm_2(c-b) > norm_2(b-a)){
-					copy(b, a);
+					a = b;
 					fa = fb;
-					copy(x, b);
+					b = x;
 					fb = fx;
 				}else{
-					copy(x, b);
-					fb = fx;
-					copy(b, c);
+					c = b;
 					fc = fb;
+					b = x;
+					fb = fx;
 				}
 			}else{
 				if (norm_2(c-b) > norm_2(b-a)){
-					copy(x, c);
+					c = x;
 					fc = fx;
 				}else{
-					copy(x, a);
+					a = x;
 					fa = fx;
 				}
 			}
 		}
 
-		//返回最小值
-		//argument_type re(a.size());
-		//if (fa < fb){
-		//	if (fa < fc)
-		//		copy(a, re);
-		//	else
-		//		copy(c, re);
-		//}else{
-		//	if (fb < fc)
-		//		copy(b, re);
-		//	else
-		//		copy(c, re);
-		//}
-
 		return (a+c)/2;
-		//THROW_EXCEPTION(std::runtime_error("gold section search is not converged."));
 	}
 
 
 	template <typename F>
-	typename unary_function_traits<F>::argument_type gold_section_search(
+	typename unary_function_traits<F>::argument_type golden_section_search(
 		F f,
 		const typename unary_function_traits<F>::argument_type &a_p,
 		const typename unary_function_traits<F>::argument_type &c_p,
@@ -150,7 +116,16 @@ namespace skynet{namespace numeric{
 	{
 		typedef typename unary_function_traits<F>::argument_type argument_type;
 		auto b_p = (c_p-a_p) * RES_GOLD + a_p;
-		return gold_section_search(f, a_p, b_p, c_p, tau, max_iteration);
+		return golden_section_search(f, a_p, b_p, c_p, tau, max_iteration);
 	}
 
+
+	template <typename F>
+	typename unary_function_traits<F>::argument_type backtracking_line_search(
+		F f,
+		const typename unary_function_traits<F>::argument_type &direction,
+		double tau = 0.8, double c1 = 1e-4, double c2 = 0.9)
+	{
+
+	}
 }}

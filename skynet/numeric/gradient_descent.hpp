@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 
 namespace skynet{namespace numeric{
+	
 
 	///\brief Rprop algorithm, http://en.wikipedia.org/wiki/Rprop
 	template <typename M>
@@ -42,37 +43,44 @@ namespace skynet{namespace numeric{
 		typedef typename vector::value_type					value_type;
 
 		///\brief	Constructs by the model smart point, and initialize the parameters.
-		rprop(shared_ptr<model> model): _model(model), _init_delta(0.125),
-			_eta_positive(1.2), _eta_negative(0.5), _max_delta(50), _min_delta(0.0), _initialized(false){}
+		rprop(): _init_delta(0.125), _eta_positive(1.2), _eta_negative(0.5),
+			_max_delta(50), _min_delta(0.0){}
 
-		///\brief	Iterates once.
-		virtual void step(){
-			if (!_initialized){
-				_initialized = true;
-				_dedw_old.resize(_model->w().size());
-				fill(_dedw_old, 0);
-				_delta_w.resize(_dedw_old.size());
-				_delta.resize(_dedw_old.size());
-				fill(_delta, _init_delta);
-			}
+		vector optimize(model &m, const vector &start_point){
+			vector dedw_old(start_point.size());
+			fill(dedw_old, 0);
+			vector dedw(start_point.size());
+			vector delta(dedw_old.size());
+			fill(delta, _init_delta);
 
-			auto dedw = _model->dedw();
-			for (size_t i = 0; i < dedw.size(); ++i){
-				auto re = _dedw_old[i] * dedw[i];
-				if (re > 0){
-					_delta[i] = min(_delta[i]*_eta_positive, _max_delta);
-					_delta_w[i] = -sign(dedw[i]) * _delta[i];
-				}else if(re <  0){
-					_delta[i] = max(_delta[i]*_eta_negative, _min_delta);
-					_delta_w[i] *= -1;
-					dedw[i] = 0.0;
-				}else{
-					_delta_w[i] = -sign(dedw[i]) * _delta[i];
+			vector point(start_point.size());
+			point.assign(start_point);
+			vector delta_w(start_point.size());
+			for (size_t epoch = 0; epoch != _iteration_num; ++epoch){
+				auto error = m(point);
+#ifdef _CONSOLE
+				std::cout << epoch << " iteration error is: " << error << std::endl;
+#endif // _CONSOLE
+				dedw.assign(m.derivative(point));
+				for (size_t i = 0; i < dedw.size(); ++i){
+					auto re = dedw_old[i] * dedw[i];
+					if (re > 0){
+						delta[i] = min(delta[i]*_eta_positive, _max_delta);
+						delta_w[i] = -sign(dedw[i]) * delta[i];
+					}else if(re <  0){
+						delta[i] = max(delta[i]*_eta_negative, _min_delta);
+						delta_w[i] *= -1;
+						dedw[i] = 0.0;
+					}else{
+						delta_w[i] = -sign(dedw[i]) * delta[i];
+					}
 				}
+
+				point += delta_w;
+				dedw_old.assign_temporary(dedw);
 			}
 
-			_dedw_old.assign(dedw);
-			_model->w(_model->w() + _delta_w);
+			return point;
 		}
 
 		double eta_positive() const							{ return _eta_positive; }
@@ -86,96 +94,99 @@ namespace skynet{namespace numeric{
 		double min_delta() const							{ return _min_delta; }
 		void min_delta(double v)							{ _min_delta = v; }
 
-		double init_delta() const								{ return _init_delta; }
-		void init_delta(double v)								{ _init_delta = v; }
+		double init_delta() const							{ return _init_delta; }
+		void init_delta(double v)							{ _init_delta = v; }
+
+		size_t iteration_num()	const						{ return _iteration_num; }
+		void iteration_num(size_t v)						{ _iteration_num = v; }
 
 	private:
-		shared_ptr<M>	  _model;
-		vector			  _dedw_old;
-		vector			  _delta;
-		vector			  _delta_w;
-		value_type			  _eta_positive;
-		value_type			  _eta_negative;
-		value_type			  _max_delta;
-		value_type			  _min_delta;
-		value_type			  _init_delta;
-		bool				  _initialized;
+		value_type				_eta_positive;
+		value_type				_eta_negative;
+		value_type				_max_delta;
+		value_type				_min_delta;
+		value_type				_init_delta;
+
+		size_t					_iteration_num;
 	};
 
 
+	/*
 	///\brief	Implements the BFGS algorithm. http://en.wikipedia.org/wiki/BFGS, it's not effective.
 	template <typename Model>
 	class bfgs{
 	public:
-		typedef Model								model;
-		typedef typename model::vector				vector;
-		typedef typename vector::value_type			value_type;
-		typedef ublas::matrix<value_type>			matrix;
+	typedef Model								model;
+	typedef typename model::vector				vector;
+	typedef typename vector::value_type			value_type;
+	typedef ublas::matrix<value_type>			matrix;
 
-		bfgs(shared_ptr<model> model) : _model(model), _first(true), _model_fun(_model){}
+	bfgs(shared_ptr<model> model) : _model(model), _first(true), _model_fun(_model){}
 
-		///\brief	Iterates once
-		void step(){
-			//initialize the vector and matrix size, and the first derivative.
-			if (_first){
-				//initialize the diag element is , others are zero.
-				_hession_inv.resize(_model->w().size(), false);
-				_hession_inv.assign(ublas::zero_matrix<value_type>(_hession_inv.size1(), _hession_inv.size2()));
-				for (size_t i = 0; i < _hession_inv.size1(); ++i){
-					_hession_inv(i, i) = 1.0;
-				}
+	///\brief	Iterates once
+	void step(){
+	//initialize the vector and matrix size, and the first derivative.
+	if (_first){
+	//initialize the diag element is , others are zero.
+	_hession_inv.resize(_model->w().size(), false);
+	_hession_inv.assign(ublas::zero_matrix<value_type>(_hession_inv.size1(), _hession_inv.size2()));
+	for (size_t i = 0; i < _hession_inv.size1(); ++i){
+	_hession_inv(i, i) = 1.0;
+	}
 
-				_g_k0.resize(_model->dedw().size());
-				_g_k0.assign(_model->dedw());
-				_start_point.resize(_model->w().size());
-				_start_point.assign(_model->w());
-				_end_point.resize(_model->w().size());
-				_end_point = _start_point - _g_k0;
+	_g_k0.resize(_model->dedw().size());
+	_g_k0.assign(_model->dedw());
+	_start_point.resize(_model->w().size());
+	_start_point.assign(_model->w());
+	_end_point.resize(_model->w().size());
+	_end_point = _start_point - _g_k0;
 
-				auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
-				//_s = -0.01 * _g_k0;
-				_model->w(best_point);
-				_s = best_point - _start_point;
-				_first = false;
-				return;
-			}
+	auto best_point = golden_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
+	//_s = -0.01 * _g_k0;
+	_model->w(best_point);
+	_s = best_point - _start_point;
+	_first = false;
+	return;
+	}
 
-			_g_k1 = _model->dedw();
-			vector y = _g_k1 - _g_k0;
-			auto s_t_y = inner_prod(_s,y);
-			matrix	s_mat(_s.size(), 1, _s.data());
-			matrix y_mat(y.size(), 1, y.data());
-			matrix part1 = (1.0/ sqr(s_t_y)) * (s_t_y+inner_prod(y, prod(_hession_inv, y))) * prod(s_mat,trans(s_mat));
-			matrix part21 = prod(y_mat, trans(s_mat));
-			part21 = prod(_hession_inv, part21);
-			matrix part22 = prod(trans(y_mat), _hession_inv);
-			part22 = prod(s_mat, part22);
-			matrix part2 = (-1.0/s_t_y) * (part21 + part22);
-			_hession_inv = _hession_inv + part1 + part2;
-			auto d_k = -prod(_hession_inv, _g_k1);
+	_g_k1 = _model->dedw();
+	vector y = _g_k1 - _g_k0;
+	auto s_t_y = inner_prod(_s,y);
+	matrix	s_mat(_s.size(), 1, _s.data());
+	matrix y_mat(y.size(), 1, y.data());
+	matrix part1 = (1.0/ sqr(s_t_y)) * (s_t_y+inner_prod(y, prod(_hession_inv, y))) * prod(s_mat,trans(s_mat));
+	matrix part21 = prod(y_mat, trans(s_mat));
+	part21 = prod(_hession_inv, part21);
+	matrix part22 = prod(trans(y_mat), _hession_inv);
+	part22 = prod(s_mat, part22);
+	matrix part2 = (-1.0/s_t_y) * (part21 + part22);
+	_hession_inv = _hession_inv + part1 + part2;
+	auto d_k = -prod(_hession_inv, _g_k1);
 
-			_start_point.assign(_model->w());
-			_end_point = _start_point + d_k;
-			auto best_point = gold_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
-			_model->w(best_point);
-			_s = best_point - _start_point;
+	_start_point.assign(_model->w());
+	_end_point = _start_point + d_k;
+	auto best_point = golden_section_search(_model_fun, _start_point, _end_point, 1e-3, 10);
+	_model->w(best_point);
+	_s = best_point - _start_point;
 
-			_g_k0.assign(_g_k1);
-		}
+	_g_k0.assign(_g_k1);
+	}
 
 	private:
-		shared_ptr<model>						_model;
-		ublas::symmetric_matrix<value_type>		_hession_inv;
-		vector									_g_k0;
-		vector									_g_k1;
-		vector									_s;
-		bool									_first;
+	shared_ptr<model>						_model;
+	ublas::symmetric_matrix<value_type>		_hession_inv;
+	vector									_g_k0;
+	vector									_g_k1;
+	vector									_s;
+	bool									_first;
 
-		vector									_start_point;
-		vector									_end_point;
-		model_function<model>					_model_fun;
+	vector									_start_point;
+	vector									_end_point;
+	model_function<model>					_model_fun;
 	};
 
+
+	*/
 
 	///\brief	Implements the limited memory BFGS algorithm. http://en.wikipedia.org/wiki/LBFGS, it's not effective.
 	template <typename Model>
@@ -186,39 +197,44 @@ namespace skynet{namespace numeric{
 		typedef typename vector::value_type			value_type;
 		typedef ublas::matrix<value_type>			matrix;
 
-		lbfgs(shared_ptr<model> model) : _model(model), _first(true), _model_fun(_model), _hist_num(100){}
+		lbfgs(): _hist_num(100), _iteration_num(100){}
 
-		///\brief	Iterates once
-		void step(){
-			//initialize the vector and matrix size, and the first derivative.
-			if (_first){
-				//	_h0.resize(_model->w().size(), 1.0);
+		vector optimize(model &m, const vector &start_point){
+#ifdef _CONSOLE
+			std::cout << "==========The LBFGS start==========" << std::endl;
+#endif // _CONSOLE
 
-				_g_k0.resize(_model->dedw().size());
-				_g_k1.resize(_model->dedw().size());
-				_g_k0.assign(_model->dedw());
-				_point_old.resize(_model->w().size());
-				_point_old.assign(_model->w());
+			vector point_old(start_point.size());
+			point_old.assign(start_point);
 
-				auto end_point = _point_old - _g_k0;
-				auto best_point = gold_section_search(_model_fun, _point_old, end_point, 1e-3, 5);
-				_model->w(best_point);
-				_first = false;
-				return;
+			///do none, but some model  need do this, make sure the derivative is right.
+			m(start_point);
+			vector g0 = m.derivative(start_point);
+			vector point = golden_section_search(m, point_old, point_old - g0, 1e-3, 10);
+
+			for (size_t i = 0; i < _iteration_num; ++i){
+				value_type error = m(point);
+#ifdef _CONSOLE
+				std::cout << i << " iteration error is: " << error << std::endl;
+#endif
+				vector g1(point.size());
+				g1.assign(m.derivative(point));
+				vector y = g1 - g0;
+				vector s = point - point_old;
+				push_info(y, s);
+				point_old.assign_temporary(point);
+				auto dir = get_direction(g1);
+				point = golden_section_search(m, point_old, point_old+dir,1e-3, 10);
+				g0.assign_temporary(g1);
 			}
+#ifdef _CONSOLE
+			std::cout << "============The LBFGS end============" << std::endl;
+#endif // _CONSOLE
+			return point;
+		}	
 
-			_g_k1.assign(_model->dedw());
-			vector y = _g_k1 - _g_k0;
-			vector s = _model->w() - _point_old; 
-			push_info(y,s);
-
-			_point_old.assign(_model->w());
-			auto dir = get_direction();
-			auto end_point = _point_old + dir;
-			auto best_point = gold_section_search(_model_fun, _point_old, end_point, 1e-3, 5);
-			_model->w(best_point);
-			_g_k0.assign(_g_k1);
-		}
+		size_t iteration_num()	const			{ return _iteration_num; }
+		void iteration_num(size_t v)			{ _iteration_num = v; }
 
 	private:
 		void push_info(const vector &y, const vector &s){
@@ -239,9 +255,9 @@ namespace skynet{namespace numeric{
 			_hdiag = sy / inner_prod(y,y);
 		}
 
-		vector get_direction(){
-			vector q(_g_k1.size());
-			q.assign(-1 * _g_k1);
+		vector get_direction(const vector &derivative){
+			vector q(derivative.size());
+			q.assign(-1 * derivative);
 
 			if (_ss.empty())
 				return q;
@@ -258,39 +274,9 @@ namespace skynet{namespace numeric{
 			}
 
 			return q;
-			//auto y_it = _ys.begin();
-			//auto s_it = _ss.begin();
-			//auto rho_it = _rhos.begin();
-			//for (;	y_it != _ys.end(); ++y_it, ++s_it, ++rho_it)
-			//{
-			//	auto  alpha = (*rho_it) * ublas::inner_prod(*s_it, q);
-			//	q = q - alpha * (*y_it);
-			//	alphas.push_back(alpha);
-			//}
-
-			////vector z(q.size());
-			////z = prod(_h0, q);
-			//q *= 0.1;
-			//auto y_rit = _ys.rbegin();
-			//auto s_rit = _ss.rbegin();
-			//auto rho_rit = _rhos.rbegin();
-			//auto alpha_rit = alphas.rbegin();
-			//for (; y_rit != _ys.rend(); ++y_rit, ++s_rit, ++rho_rit, ++alpha_rit)
-			//{
-			//	value_type beta = (*rho_rit) * ublas::inner_prod(*y_rit, q);
-			//	q = q + (*alpha_rit - beta) * (*s_rit);
-			//}
-
-			//return -1 * q;
 		}
 
 	private:
-		shared_ptr<model>						_model;
-		//ublas::diagonal_matrix<value_type>		_h0;
-		vector									_g_k0;
-		vector									_g_k1;
-		bool									_first;
-
 		value_type								_hdiag;
 		value_type								_threshold;
 		size_t									_hist_num;
@@ -298,8 +284,7 @@ namespace skynet{namespace numeric{
 		std::deque<vector>						_ys;
 		std::deque<double>						_rhos;
 
-		vector									_point_old;
-		model_function<model>					_model_fun;
+		size_t									_iteration_num;
 	};
 
 

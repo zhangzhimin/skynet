@@ -32,12 +32,12 @@ THE SOFTWARE.
 #pragma warning(disable: 4996)
 
 namespace skynet{namespace nn{
-	using numeric::model;
-	using numeric::rprop;
-	using numeric::optimizer;	
+
+	using namespace skynet::numeric;
+
 
 	///\brief	Implements the forward feedback neural networks
-	class ffnet: public model<>{
+	class ffnet{
 	public:
 		typedef ffnet											self;
 
@@ -132,11 +132,12 @@ namespace skynet{namespace nn{
 			}
 
 			virtual vectord dedw(){
-				ASSERT(_batch_size != 0, "The backprogation is not excuted.");
+				ASSERT(_batch_size > 0, "The backprogation is not excuted.");
 
 				auto scale = 1.0 / _batch_size;
-				_dedws *= scale;
-				return vectord(_dedws.data());
+				vectord dedws(_dedws.data().size());
+				transform(_dedws.data(), dedws, [scale](double e){ return scale * e;});
+				return dedws;
 			}
 
 			virtual vectord w() {
@@ -315,11 +316,10 @@ namespace skynet{namespace nn{
 		};
 
 		///\brief	Implements the interface of numeric::model
-	public:
-
+	private:
 
 		///\brief	Gets the weights of ffnet(shallow copy).
-		virtual vectord w(){
+		vectord w(){
 			auto it_begin = _w.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
 				auto w = _layers[i]->w();
@@ -331,7 +331,7 @@ namespace skynet{namespace nn{
 		}
 
 		///\brief	Gets the derivative of the error on the weights(shallow copy)
-		virtual vectord dedw(){
+		vectord dedw(){
 			auto it_begin = _dedw.begin();
 			for (size_t i = 0; i < _layers.size(); ++i){
 				auto layer_dedw = _layers[i]->dedw();
@@ -343,7 +343,7 @@ namespace skynet{namespace nn{
 		}
 
 		///\brief	Sets the weights of ffnet(shallow copy)
-		virtual void w(const vectord &v){
+		void w(const vectord &v){
 			_w = v;
 
 			//copy the ffnet weights to the layers weights
@@ -358,8 +358,7 @@ namespace skynet{namespace nn{
 			}
 		}
 
-
-		virtual double error(const vectord &v){
+		double error(const vectord &v){
 			this->w(v);
 
 			double mse = 0;
@@ -383,13 +382,35 @@ namespace skynet{namespace nn{
 
 			return mse;
 		}
+	public:
+	///\brief	Adapte the model to function with derivative.		 
+		class model{
+		public:
+			typedef vectord		vector;
+			typedef double		value_type;
 
+			model(ffnet &sp_model): _model(sp_model){}
+
+			///\brief	Gets the function result.
+			value_type operator()(const vector &input){
+				return _model.error(input);
+			}
+
+			///\brief	Gets the function derivative, the function should be invoked after operator().
+			///			Because the input are unused.
+			vector	derivative(const vector &input){
+				return _model.dedw();
+			}
+
+		private:
+			ffnet		&_model;
+		};
 
 	public:
 		ffnet(const self &rhs): _layers(rhs._layers), _input(rhs._input), _output(rhs._output), 
-			_epoch_num(rhs._epoch_num), _w(rhs._w), _dedw(rhs._dedw){}
+			_w(rhs._w), _dedw(rhs._dedw){}
 		///\brief	Constructs the ffnet by the input size and output size.
-		ffnet(size_t in_size, size_t out_size): _input(in_size+1), _output(out_size), _epoch_num(100){	}
+		ffnet(size_t in_size, size_t out_size): _input(in_size+1), _output(out_size){	}
 
 		///\brief	Returs the prediction value.
 		vectord operator()(const vectord &input){
@@ -418,43 +439,23 @@ namespace skynet{namespace nn{
 			return _layers;
 		}
 
-		///\brief	Gets the training epoch number.
-		size_t epoch_num()	const				{ return _epoch_num; }
-		///\brief	Sets the training epoch number.
-		void epoch_num(size_t v)				{ _epoch_num = v; }
-
 		///\brief		Trains the ffnet
 		///\param [in] data	The traing data
 		///\param [in] opt	The optimizer based on gradient descent.
-		void train(const ml::database2<double, double> &data, optimizer &opt){
+		void train(const ml::database2<double, double> &data, optimizer_base<model> &opt){
 			init();
 
 			ASSERT(_output.size() == _layers.back()->size(), "");
 			_data = data;
+			model f(*this);
 
-#ifdef _CONSOLE
-			std::cout << "====The bp net begin training.====" << std::endl;
-			std::cout << "The samples size is: " << data.targets.size2() << std::endl;
-#endif // _CONSOLE
-
-			for (size_t epoch = 0; epoch < _epoch_num; ++epoch){
-				double error = 0;
-				for (size_t i = 0; i < data.targets.size2(); ++i){
-					auto out = (*this)(ublas::column(data.patterns, i));
-					vectord e = column(data.targets, i) - out;
-					error += ublas::norm_2(e);
-
-					for (auto it = _layers.rbegin(); it != _layers.rend(); ++it){
-						e = (*it)->back_propagate(e);
-					}
-				}
-				error /= data.targets.size2();
-#ifdef _CONSOLE
-				std::cout << epoch << " epoch error: " << error << std::endl;
-#endif // _CONSOLE
-				opt.step();
-			}
+			opt.optimize(f, w());
 		};
+
+		void train(const ml::database2<double, double> &data){
+			optimizer_adaptor<lbfgs<ffnet::model>> opt;
+			train(data, opt);			
+		}
 
 	private:
 		void init(){
@@ -483,12 +484,10 @@ namespace skynet{namespace nn{
 		vectord												_input;
 		vectord												_output;
 
-		size_t												_epoch_num;
-
 		vectord												_w;
 		vectord												_dedw;	
 
 		ml::database2<double, double>						_data;
 	};
-    
+
 }}

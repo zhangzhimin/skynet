@@ -33,10 +33,12 @@ int main()
 	auto net = make_shared<ffnet>(4, 3);
 	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(20));
 	net->add_layer(make_shared<ffnet::layer</*sigmoid_function<>*/>>(3));
+	
+	optimizer_adaptor<lbfgs<ffnet::model>> opt;
+	//optimizer_adaptor<rprop<ffnet::model>> opt;
 
-	optimizer_adaptor<lbfgs<ffnet>> opt(net);
+	opt.iteration_num(500);
 
-	net->epoch_num(500);
 	net->train(data, opt); 
 
 	for (size_t i = 0; i < data.patterns.size2(); ++i){
