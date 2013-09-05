@@ -1,4 +1,4 @@
-*=============================================================================
+/*=============================================================================
 The MIT License (MIT)
 
 Copyright @ 2013 by Zhang Zhimin 
@@ -32,9 +32,9 @@ namespace skynet{
 
 
 	template <typename T>
-	multi_array<T, 2> crop(const multi_array<T, 2> &source, index2  top_left, extent2 size){
-		multi_array<T, 2> target(size);
-		
+	multi_array<T, 2> crop(const multi_array<T, 2> &source, index2  top_left, extent2 extent){
+		multi_array<T, 2> target(extent);
+
 		for (size_t row = 0; row < target.height(); ++row){
 			for (size_t col = 0; col < target.width(); ++col){
 				target(col, row) = source(top_left.x+col, top_left.y+row);
@@ -42,6 +42,22 @@ namespace skynet{
 		}
 
 		return target;
+	}
+
+	template <typename T>
+	std::vector<multi_array<T, 2>> grid_crop(const multi_array<T, 2> &source, extent2 extent){
+		auto result_size = source.extent() / extent;
+		
+		std::vector<multi_array<T, 2>> images;
+		for (size_t row = 0; row < result_size.y; ++row){
+			for (size_t col = 0; col < result_size.x; ++col){
+				index2 top_left = index2(col, row) * extent;
+				auto crop_image = crop(source, top_left, extent);
+				images.push_back(crop_image);
+			}
+		}
+
+		return images;
 	}
 
 }

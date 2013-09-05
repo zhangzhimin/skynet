@@ -5,48 +5,39 @@
 //#include <skynet/neuralnetworks/auto_encoder.hpp>
 #include <skynet/cv/extension/bmp.hpp>
 #include <skynet/utility/file.hpp>
-#include <skynet/core/ublas_extentsion.hpp>
+#include <skynet/core/crop.hpp>
+#include <skynet/core/io.hpp>
 
 using namespace skynet;
 using namespace skynet::nn;
 using namespace skynet::numeric;
 
 int main(){
-	cv::io::bmp_info_header info;
+	std::srand(std::time(nullptr));
 
-	auto files = move(load_directory("../data/mit/nonfaces/"));
+	cv::io::bmp_info_header info;
+	auto image = cv::image_cast<cv::image_gray>(cv::io::read_bmp("../data/ocean.bmp", info));
+	auto images = grid_crop(image, extent2(8,8));
+
 	ml::database2<double, double> data;
-	data.patterns.resize(400, 100);
-	for (size_t i = 0;i < 100;  ){
-		cv::io::bmp_info_header		info;
-		auto image = cv::io::read_bmp(files[i], info);
-		if (image.type() == cv::image_type::gray8){
-			auto gray = cv::image_cast<cv::image_gray>(image);
-			transform(gray, column(data.patterns, i), [](byte e){ return e/256.0; });
-			++i;
-		}else if(image.type() == cv::image_type::bgr){
-			auto bgr = cv::image_cast<cv::image_bgr>(image);
-			transform(bgr, column(data.patterns, i), [](cv::bgr e){ return e.b/256.0; });
-			++i;
-		}
+	data.patterns.resize(64, 10000);
+	for (size_t i = 0; i < 10000; ++i){
+		transform(images[i], column(data.patterns, i), [](byte e) { return 0.1+0.8*e/256.0;});
 	}
 	data.targets = data.patterns;
 
-	auto net = make_shared<ffnet>(400, 400);
-	net->add_layer(make_shared<ffnet::sparse_layer<>>(10));
-	net->add_layer(make_shared<ffnet::layer<>>(400));
-	optimizer_adaptor<rprop<ffnet>> opt(net);
-	net->epoch_num(500);
-	net->train(data, opt); 
+	auto net = make_shared<ffnet>(64, 64);
+	net->add_layer(make_shared<ffnet::sparse_layer<>>(25));
+	net->add_layer(make_shared<ffnet::layer<sigmoid_function<>>>(64));
+	optimizer_adaptor<rprop<ffnet::model>> opt;
+	optimizer_adaptor<lbfgs<ffnet::model>> opt1;
 
-	//auto sp_auto_encoder = make_shared<nn::auto_encoder>(400, 200);
-	//optimizer_adaptor<bfgs<auto_encoder>> opt(sp_auto_encoder);
-	//sp_auto_encoder->train(data, opt);
-	// auto image = cv::image_cast<cv::image_bgr>(cv::io::read_bmp("../data/mit/nonfaces/B5_00000.bmp", info));
-	// cv::image_gray im_gray(image.extent());
-	// transform(image, im_gray, [](cv::bgr pixel) {
-	//     return byte(pixel.b);
-	// });
+	opt.iteration_num(10000);
+	opt1.iteration_num(2000);
+	net->train(data, opt1); 
 
+	auto weights = net->layers().front()->w();
+	write2raw(weights, "../data/weights.raw");
+	//net->train(opt1); 
 	return 0;
 }

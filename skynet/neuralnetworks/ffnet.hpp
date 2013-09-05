@@ -225,8 +225,8 @@ namespace skynet{namespace nn{
 				//calculate local error
 				derivative<F> derivative_f(_fun);
 				for (size_t i = 0; i < error.size(); ++i){
-					_local_error[i] = (error[i] + _beta * (-_sparseness/_out[i] + (1-_sparseness)/(1-_out[i]))) *
-						derivative_f.value_by_self(_out[i]);
+					_local_error[i] = error[i]*derivative_f.value_by_self(_out[i]); 
+					_local_error[i]	-= derivative_f.value_by_self(_out[i]) * _beta * (-_sparseness/max(_out[i],1e-10) + (1-_sparseness)/max((1-_out[i]), 1e-10));
 				}
 				//calculate derivative errors
 				for (size_t r = 0; r < _weights.size1(); ++r){
@@ -246,16 +246,11 @@ namespace skynet{namespace nn{
 			}
 
 			virtual vectord dedw(){
-				if (_refresh){
-					ASSERT(_batch_size != 0, "");
-					auto scale = 1.0 / _batch_size;
-					_dedws *= scale;
+				ASSERT(_batch_size != 0, "");
+				auto scale = 1.0 / _batch_size;
+				_dedws *= scale;
 
-					_refresh = false;
-					return vectord(_dedws.data());
-				}else{
-					return vectord(_dedws.data());
-				}
+				return vectord(_dedws.data());
 			}
 
 			virtual vectord w() {
@@ -270,22 +265,28 @@ namespace skynet{namespace nn{
 			virtual void update(){
 				for (size_t r = 0; r < _dedws.size1(); ++r){
 					for (size_t c = 0; c < _dedws.size2(); ++c){
-						_dedws(r,c) = 0.0;
+						_dedws(r,c) = 0.0;					
 					}
 				}
 				_batch_size = 0;
+				fill(_activaties, 0.0);
 				_refresh = true;
 			}
 
 			virtual double kl_divergence(){
-				if (_refresh){
-					_activaties /= _batch_size;
+				/*_activaties /= _batch_size;*/
+				double scale = 1.0/_batch_size;
+				vectord mean_activaties(_activaties.size());
+				transform(_activaties, mean_activaties, [scale](double e){ return scale*e;});
+				vectord kl(mean_activaties.size());
+				for (size_t i = 0; i < kl.size(); ++i){
+					kl[i] = _sparseness*log(_sparseness/max(1e-10,mean_activaties[i])) + (1-_sparseness)*log((1-_sparseness)/max(1e-10,(1-mean_activaties[i])));
 				}
 
-				vectord kl(_activaties.size());
-				for (size_t i = 0; i < kl.size(); ++i){
-					kl[i] = _sparseness*log(_sparseness/_activaties[i]) + (1-_sparseness)*log((1-_sparseness)/(1-_activaties[1]));
-				}
+#ifdef _CONSOLE
+				std::cout << "the kl error is: " << sum(kl) << std::endl;
+#endif // _CONSOLE
+
 
 				return sum(kl);
 			}
@@ -383,7 +384,7 @@ namespace skynet{namespace nn{
 			return mse;
 		}
 	public:
-	///\brief	Adapte the model to function with derivative.		 
+		///\brief	Adapte the model to function with derivative.		 
 		class model{
 		public:
 			typedef vectord		vector;
@@ -455,6 +456,11 @@ namespace skynet{namespace nn{
 		void train(const ml::database2<double, double> &data){
 			optimizer_adaptor<lbfgs<ffnet::model>> opt;
 			train(data, opt);			
+		}
+
+		void train(optimizer_base<model> &opt){
+			model f(*this);
+			opt.optimize(f, w());
 		}
 
 	private:

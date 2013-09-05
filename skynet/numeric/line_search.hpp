@@ -58,7 +58,7 @@ namespace skynet{namespace numeric{
 		auto d1 = normalize(c_p-b_p);
 		auto d2 = normalize(c_p-a_p);
 		auto dir = ublas::inner_prod(d1,d2);
-		ASSERT(is_equal(abs(dir), 1.0, tau), "The a b c is not in the same line.");
+		ASSERT(is_equal(abs(dir), 1.0, 0.1), "The a b c is not in the same line.");
 #endif // !DISABLE_ASSERT
 
 		argument_type a(a_p.size());
@@ -133,25 +133,22 @@ namespace skynet{namespace numeric{
 		argument_type	point(start_point.size());
 		point.assign(start_point);
 		auto value_old = f(point);
-		auto derivative_old = f.derivative(point);
+		argument_type derivative_old(point.size());
+		derivative_old.assign(f.derivative(point));
 
 		double step_scale = 1.0;
 		for (size_t i = 0; i < max_iteration; ++i, step_scale *= tau){
 			point = start_point + step_scale * direction;
 			auto value = f(point);
-			argument_type derivative(point.size());
-			derivative.assign(f.derivative(point));
+			auto derivative = f.derivative(point);
 
 			auto pf = inner_prod(direction, derivative_old);
 			//wolfe condition
 			if (value <= value_old + c1 * step_scale * pf){
-				if (inner_prod(direction, derivative) >= c2 * pf){
+				if (abs(inner_prod(direction, derivative)) <= abs(c2 * pf)){
 					return point;
 				}
 			}
-
-			derivative_old.assign_temporary(derivative);
-			value_old = value;
 		}
 
 		return point;
