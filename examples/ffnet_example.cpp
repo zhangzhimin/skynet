@@ -31,11 +31,11 @@ int main()
 	}
 	
 	auto net = make_shared<ffnet>(4, 3);
-	net->add_layer(make_shared<ffnet::sparse_layer<sigmoid_function<>>>(2));
+	net->add_layer(make_shared<ffnet::layer<sigmoid_function<>>>(6));
 	net->add_layer(make_shared<ffnet::layer<sigmoid_function<>>>(3));
 	
 	//optimizer_adaptor<lbfgs<ffnet::model>> opt;
-	optimizer_adaptor<lbfgs<ffnet::model>> opt;
+	optimizer_adaptor<rprop<ffnet::model>> opt;
 
 	opt.iteration_num(500);
 

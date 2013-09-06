@@ -6,13 +6,13 @@
 
 namespace skynet{
 	
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	std::ostream &operator<<(std::ostream &os, const std::array<T, D> &mat){
 		os.write(static_cast<char *>(&(*mat.begin())), mat.size());
 		return os;
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	std::istream &operator>>(std::istream &is, typename std::array<T, D> &mat){
 		is.read(static_cast<char *>(&(*mat.begin())), mat.size());
 		return is;
@@ -38,21 +38,21 @@ namespace skynet{
 		}
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void writemtx(const multi_array<T, D> &mat, const string &file){
 		std::ofstream os(file, std::ios::binary);
 		if (!os.good()){
-			throw bad_stream(file);
+			throw std::runtime_error("can't open the file "+ file);
 		}
 
 		os.write((char *)(mat.buffer().get()), mat.size() * sizeof(T));
 	}
 
-	template <typename T, typename size_t D>
+	template <typename T, size_t D>
 	void readmtx(multi_array<T, D> &mat, const string &file){
 		std::ifstream is(file, std::ios::binary);
 		if (!is.good()) {
-			throw bad_stream(file);
+			throw std::runtime_error("can't open the file "+ file);
 		}
 
 		is.read((char *)(mat.buffer().get()), mat.size() * sizeof(T));
