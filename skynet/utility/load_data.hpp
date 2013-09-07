@@ -28,8 +28,23 @@ THE SOFTWARE.
 #include <boost/lexical_cast.hpp>
 
 #include <skynet/config.hpp>
+#include <skynet/core/array.hpp>
 
-namespace skynet{
+namespace skynet{namespace utility{
+    
+    namespace detail{
+        
+        int read_inverse_int(std::ifstream &fs){
+            int temp = 0;
+            char *p = reinterpret_cast<char *>(&temp);
+            fs.read(p+3, 1);
+            fs.read(p+2, 1);
+            fs.read(p+1, 1);
+            fs.read(p, 1);
+            return temp;
+        }
+        
+    }
 
 
 	std::array<ublas::matrix<double>, 3> get_iris(std::string filename){
@@ -55,4 +70,47 @@ namespace skynet{
 		return datas;
 	}
 
-}
+	
+	std::vector<byte> get_digit_labels(const string &filename){
+		std::ifstream fs(filename, std::ios::binary);
+		int  magic_num = 0;
+		fs.read((char *)&magic_num, 4);
+		ASSERT(magic_num == 0x01080000, "The farmat error.");
+		//int items_num = 0;
+		//fs.read((char *)&items_num, 4);
+        auto items_num = detail::read_inverse_int(fs);
+		std::vector<byte> labels(items_num);
+
+		fs.read((char *)&(labels[0]), items_num);
+		fs.close();
+		return labels;
+	}
+
+
+	std::vector<array2b> get_digit_images(const string &filename){
+		std::ifstream fs(filename, std::ios::binary);
+		int magic_num = 0;
+		fs.read((char *)&magic_num, 4);
+		ASSERT(magic_num == 0x03080000, "The farmat error.");
+		//
+		//int items_num = 0;
+        auto items_num = detail::read_inverse_int(fs);
+		//fs.read((char *)&items_num, 4);
+		//int row_size = 0;
+        auto row_size = detail::read_inverse_int(fs);
+        auto col_size = detail::read_inverse_int(fs);
+		//int col_size = 0;
+		//fs.read((char *)&row_size, 4);
+		//fs.read((char *)&col_size, 4);
+		
+		std::vector<array2b> images;
+		for (size_t i = 0; i < items_num; ++i){
+			array2b image(col_size, row_size);
+			fs.read((char *)&(image[0]), col_size * row_size);
+			images.push_back(image);
+		}
+
+		return images;
+	}
+
+}}

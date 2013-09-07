@@ -137,7 +137,7 @@ namespace skynet{namespace nn{
 				auto scale = 1.0 / _batch_size;
 				vectord dedws(_dedws.data().size());
 				//transform(_dedws.data(), dedws, [scale](double e){ return scale * e;});
-                transform(_dedws.data(), dedws, [scale](double e){ return e;});
+                transform(_dedws.data(), dedws, [scale](double e){ return scale*e;});
 				return dedws;
 			}
 
@@ -176,13 +176,14 @@ namespace skynet{namespace nn{
 		public:
 			virtual double kl_divergence() = 0;
 			virtual double beta() const = 0;
+            virtual double lambda() const = 0;
 		};
 
 		template <typename F = sigmoid_function<>>
 		class sparse_layer: public sparse_layer_base{
 		public:
 			sparse_layer(size_t size) :  _out(size+1), _y(size+1), _batch_size(0), _local_error(size, 0.0),
-				_activaties(size), _sparseness(0.0001), _beta(3.0), _refresh(true){}
+				_activaties(size), _sparseness(0.01), _beta(3.0), _refresh(true), _lambda(0.001){}
 
 			void transfer_function(F f){
 				_fun = f;
@@ -250,6 +251,12 @@ namespace skynet{namespace nn{
 				ASSERT(_batch_size != 0, "");
 				auto scale = 1.0 / _batch_size;
 				_dedws *= scale;
+                
+                for (size_t r = 0; r < _dedws.size1(); ++r){
+                    for (size_t c = 0; c < _dedws.size2(); ++c){
+                        _dedws(r,c) += _lambda * _weights(r,c);
+                    }                    
+                }
 
 				return vectord(_dedws.data());
 			}
@@ -290,7 +297,7 @@ namespace skynet{namespace nn{
 
 
 				return sum(kl);
-			}
+			}                                                                                                                                                                                                                                                                                                                                                                                                  
 
 			virtual size_t  size() const						{ return _out.size()-1; }
 
@@ -299,6 +306,9 @@ namespace skynet{namespace nn{
 
 			virtual double beta() const											{ return _beta; }
 			void beta(double v)											{ _beta = v; }
+            
+            virtual double lambda() const                               { return _lambda; }
+            void lambda(double v)                                       { _lambda = v; }
 
 		private:
 			F _fun;
@@ -313,6 +323,7 @@ namespace skynet{namespace nn{
 			vectord				_activaties;
 			double				_sparseness;
 			double				_beta;
+            double              _lambda;
 
 			bool				_refresh;
 		};
@@ -379,6 +390,7 @@ namespace skynet{namespace nn{
 				auto sp = std::dynamic_pointer_cast<sparse_layer_base>(_layers[i]);
 				if (sp){
 					mse += sp->beta() * sp->kl_divergence();
+                    mse += sp->lambda() * ublas::norm_2(sp->w());
 				}
 			}
 
@@ -457,11 +469,6 @@ namespace skynet{namespace nn{
 		void train(const ml::database2<double, double> &data){
 			optimizer_adaptor<lbfgs<ffnet::model>> opt;
 			train(data, opt);			
-		}
-
-		void train(optimizer_base<model> &opt){
-			model f(*this);
-			opt.optimize(f, w());
 		}
 
 	private:
