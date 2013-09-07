@@ -182,7 +182,7 @@ namespace skynet{namespace nn{
 		class sparse_layer: public sparse_layer_base{
 		public:
 			sparse_layer(size_t size) :  _out(size+1), _y(size+1), _batch_size(0), _local_error(size, 0.0),
-				_activaties(size), _sparseness(0.05), _beta(1.0), _refresh(true){}
+				_activaties(size), _sparseness(0.0001), _beta(3.0), _refresh(true){}
 
 			void transfer_function(F f){
 				_fun = f;

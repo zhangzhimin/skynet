@@ -33,7 +33,7 @@ int main()
 	auto net = make_shared<ffnet>(4, 3);
 	net->add_layer(make_shared<ffnet::layer<sigmoid_function<>>>(6));
 	net->add_layer(make_shared<ffnet::layer<sigmoid_function<>>>(3));
-	
+	/Users/zhangzhimin/git/skynet/examples/ffnet_example.cpp
 	//optimizer_adaptor<lbfgs<ffnet::model>> opt;
 	optimizer_adaptor<rprop<ffnet::model>> opt;
 
