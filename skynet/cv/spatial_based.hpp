@@ -26,28 +26,25 @@ THE SOFTWARE.
 #pragma once
 
 #include <skynet/core/conv.hpp>
-
-#include <algorithm>
-#include <cmath>
-#include <functional>
+#include <skynet/core/sampling.hpp>
 
 namespace skynet{ namespace cv{
     using std::function;
 
     template <typename M>
-    auto gaussian_filter(const M &mat_src, const int &radius=1)
-        ->lazy_array<M::dim, function<typename M::value_type(const size_t &)>>
-    {
-        gaussian_mask<M::dim> mask(radius);
+    auto gaussian_filter(const M &mat_src){
+		gaussian_mask<M::dim> mask;
 		mask.attach(mat_src.extent());
         auto temp = conv(mat_src, mask);
         
-        typedef typename M::value_type value_type;
-         function<value_type (const size_t &)> fun = [=](const size_t &i){
-			 auto scale = 1.0 / mask.weight_sum();
-             return scale * temp[i];
-         };
-
-         return make_lazy_array(mat_src.extent(), fun);
+        return make_lazy_array(mat_src.extent(), [=](const size_t &i)->typename M::value_type {
+			return temp[i] / mask.weight_sum();
+		});
     }
+
+	template <typename M>
+	auto gaussian_down_sampling(const M &mat) {
+		return down_sampling(gaussian_filter(mat));
+	}
+
 }}

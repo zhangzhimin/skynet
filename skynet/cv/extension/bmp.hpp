@@ -165,10 +165,12 @@ namespace skynet{ namespace cv{
 			THROW_EXCEPTION(std::runtime_error("The bmp decode is not supported."));
 		}
 
-		void write_bmp(const multi_array<byte, 2> &image, const std::string &filename){
-			//std::tr2::sys::path filepath(filename);
-			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
+		image_any read_bmp(const std::string &filename) {
+			bmp_info_header tmp;
+			return read_bmp(filename, tmp);
+		}
 
+		void write_bmp(const multi_array<byte, 2> &image, const std::string &filename){
 			bmp_file_header file_header;
 			file_header.signature = 0x4d42;
 			file_header.reserved1 = 0;
@@ -238,9 +240,6 @@ namespace skynet{ namespace cv{
 		}
 
 		void write_bmp(const multi_array<bgr, 2> &image, const std::string &filename){
-			//std::tr2::sys::path filepath(filename);
-			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
-
 			bmp_file_header file_header;
 			file_header.signature = 0x4d42;
 			file_header.reserved1 = 0;
@@ -300,26 +299,29 @@ namespace skynet{ namespace cv{
 			}
 		}
 
-
-		void write_bmp(const image_any &any, const std::string &filename){
-			//std::tr2::sys::path filepath(filename);
-			//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
-
-			if (any.type() == image_type::gray8){
-				auto image = image_cast<array2b>(any);
-				write_bmp(image, filename);
-				return;
-			}
-
-			if (any.type() == image_type::bgr){
-				auto image = image_cast<multi_array<bgr, 2>>(any);
-				write_bmp(image, filename);
-				return;
-			}
-
-			THROW_EXCEPTION(std::runtime_error("The image type is not supported."));
+		template <typename ImageType>
+		typename std::enable_if<std::is_same<typename ImageType::value_type, byte>::value
+						||std::is_same<typename ImageType::value_type, bgr>::value,void>::type write_bmp(const ImageType &image, const std::string &filename) {
+			auto data = evalute(image);
+			write_bmp(data, filename);
 		}
+		//void write_bmp(const image_any &any, const std::string &filename){
+		//	//std::tr2::sys::path filepath(filename);
+		//	//ASSERT(filepath.extension() == ".bmp", "The file is not bmp.");
 
+		//	if (any.type() == image_type::gray8){
+		//		auto image = image_cast<array2b>(any);
+		//		write_bmp(image, filename);
+		//		return;
+		//	}
 
+		//	if (any.type() == image_type::bgr){
+		//		auto image = image_cast<multi_array<bgr, 2>>(any);
+		//		write_bmp(image, filename);
+		//		return;
+		//	}
+
+		//	THROW_EXCEPTION(std::runtime_error("The image type is not supported."));
+		//}
 	}
 }}

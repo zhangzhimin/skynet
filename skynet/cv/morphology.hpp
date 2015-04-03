@@ -1,16 +1,10 @@
 #pragma once
 
+#include <queue>
 #include <skynet/core/point.hpp>
-#include <skynet/core/detail.hpp>
 #include <skynet/core/neighbor.hpp>
 #include <skynet/core/lazy_evaluation.hpp>
-#include <skynet/geometry/region.hpp>
 #include <skynet/utility/tag.hpp>
-#include <skynet/utility/cycle_num.hpp>
-
-#include <exception>
-#include <functional>
-#include <queue>
 
 #pragma message("Warning:  when you use the morphology operation, \
                 the infomation of the boundary is invalid.(by zzm)")
@@ -66,44 +60,44 @@ namespace skynet{ namespace cv{
 		return erode(cache4lazy(dilate(mat_src, n)), n);
 	}
 
-	template <typename M>
-	size_t nuclete(const M &in_image, const size_t &init_pos) {
-		auto size = in_image.extent();
-		auto nucleus = skynet::size_t2index(init_pos, size);
-		decltype(nucleus) pre_index(nucleus);
-		//make the pre_index and nucleus are not the same.
-		pre_index[0] += 5;
+	//template <typename M>
+	//size_t nuclete(const M &in_image, const size_t &init_pos) {
+	//	auto size = in_image.extent();
+	//	auto nucleus = skynet::size_t2index(init_pos, size);
+	//	decltype(nucleus) pre_index(nucleus);
+	//	//make the pre_index and nucleus are not the same.
+	//	pre_index[0] += 5;
 
-		int count = 100;//Max iteration num
+	//	int count = 100;//Max iteration num
 
-		cycle_num<0, M::dim - 1> cyc_num(0);
-		while(count > 0){
-			++cyc_num;
-			--count;
-			auto sec_index = nucleus;
-			auto fir_index = nucleus;
-			while (sec_index[cyc_num] < size[cyc_num]){
-				++(sec_index[cyc_num]);
+	//	cycle_num<0, M::dim - 1> cyc_num(0);
+	//	while(count > 0){
+	//		++cyc_num;
+	//		--count;
+	//		auto sec_index = nucleus;
+	//		auto fir_index = nucleus;
+	//		while (sec_index[cyc_num] < size[cyc_num]){
+	//			++(sec_index[cyc_num]);
 
-				if (!in_image.get_value(sec_index))	break;
-			}
+	//			if (!in_image.get_value(sec_index))	break;
+	//		}
 
-			while (fir_index[cyc_num] > 0){
-				--(fir_index[cyc_num]);
+	//		while (fir_index[cyc_num] > 0){
+	//			--(fir_index[cyc_num]);
 
-				if (!in_image.get_value(fir_index))	break;
-			}
+	//			if (!in_image.get_value(fir_index))	break;
+	//		}
 
-			nucleus = std::move(center_point(fir_index, sec_index));
-			if (distance(pre_index, nucleus, street_tag()) < 3){
-				return skynet::index2size_t(nucleus, size);
-			}
+	//		nucleus = std::move(center_point(fir_index, sec_index));
+	//		if (distance(pre_index, nucleus, street_tag()) < 3){
+	//			return skynet::index2size_t(nucleus, size);
+	//		}
 
-			pre_index = nucleus;
-		}	
+	//		pre_index = nucleus;
+	//	}	
 
-		return skynet::index2size_t(nucleus, size);
-	}
+	//	return skynet::index2size_t(nucleus, size);
+	//}
 
 	//http://en.wikipedia.org/wiki/grassfire
 	// for each row in image left to right
@@ -125,10 +119,11 @@ namespace skynet{ namespace cv{
 	//  }
 	//}
 	template <typename M1>
-	multi_array<int, M1::dim> grassfire(const M1 &in_image){
-		const diamand_neighbor<M1::dim> neighbors(in_image.extent());
-		multi_array<int, M1::dim> out_image(in_image.extent());
-		out_image.set_all_zero();
+	multi_array<size_t, M1::dim> grassfire(const M1 &in_image){
+		diamand_neighbor<M1::dim> neighbors;
+		neighbors.attach(in_image.extent());
+		multi_array<size_t, M1::dim> out_image(in_image.extent());
+		fill(out_image, 0);
 		//top to down
 		auto mid_it = neighbors.begin()+M1::dim;
 		for (size_t i = -neighbors.min_offset(); i < (in_image.size()-neighbors.max_offset()); ++i){
@@ -158,7 +153,7 @@ namespace skynet{ namespace cv{
 	multi_array<int, M::dim> grassfire_outside(const M &volume){
 		const diamand_neighbor<M::dim> neighbors(volume.extent());
 		multi_array<int, M::dim> out_volume(volume.extent());
-		out_volume.set_all_zero();
+		fill(out_volume, 0);
 		static const int BOUND_VALUE = std::numeric_limits<int>::max()/2;
 		skynet::set_boundary(out_volume, BOUND_VALUE);
 

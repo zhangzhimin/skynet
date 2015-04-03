@@ -1,9 +1,9 @@
 #pragma once
 
-#include <skynet/utility/iterator_facade.hpp>
-
+#include <type_traits>
 #include <atomic>
 
+#include <skynet/utility/iterator_facade.hpp>
 
 
 namespace skynet{
@@ -63,8 +63,8 @@ namespace skynet{
 		typedef const value_type &						const_reference;
 		//typedef value_type *							iterator;
 		//typedef const value_type *						const_iterator;
-		typedef index_iterator<self_type>				iterator;
-		typedef index_iterator<const self_type>			const_iterator;
+		typedef detail::index_iterator<self_type>				iterator;
+		typedef detail::index_iterator<const self_type>			const_iterator;
 		//define size_type  for ublas
 		typedef size_t									size_type;
 		typedef std::ptrdiff_t							difference_type;
@@ -73,14 +73,14 @@ namespace skynet{
 
 		shared_buffer(size_t  size) : _size(size), _p(_alloc.allocate(size)){
             //mac and linux not support std::has_trivial_constructor
-			if (!boost::has_trivial_constructor<value_type>::value){
+			if (!std::is_trivial<value_type>::value){
 				auto temp = _p;
 				for (size_t i = 0; i < _size; ++i){
 					_alloc.construct(temp++);
 				}
 
 				auto p = _p;
-				auto size = _size;
+				//auto size = _size;
 
 				_ref_counter = detail::shared_buffer_count([p, size](){
 					Alloc alloc;
@@ -94,7 +94,7 @@ namespace skynet{
 			}
 			else{
 				auto p = _p;
-				auto size = _size;
+				//auto size = _size;
 				_ref_counter = detail::shared_buffer_count([p, size](){
 					Alloc alloc;
 					alloc.deallocate(p, size);

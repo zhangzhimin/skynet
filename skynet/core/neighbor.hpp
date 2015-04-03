@@ -1,54 +1,45 @@
 #pragma once
 
-#include <skynet/utility/iterator_facade.hpp>
-
 #include <stdexcept>
 #include <array>
+#include <skynet/core/adaptor_types.hpp>
 
 namespace skynet{
 
-#pragma region neighbor
+	template <typename B, typename size_t dim>
+	class neighbor_adaptor : public iterator_adaptor<B> {
+	public:
+		typedef B										neighbor_type;
+		typedef point<ptrdiff_t, dim>                   extent_type;
+		typedef ptrdiff_t								value_type;
+		typedef const value_type &                      reference;
+		typedef const value_type &                      const_reference;
+
+		ptrdiff_t max_offset() const {
+			return *std::max_element(begin(), end());
+		}
+
+		ptrdiff_t min_offset() const {
+			return *std::min_element(begin(), end());
+		}
+	};
 
 	//   *                                
 	// * o *
 	//   *
 	//It's the diamand_neighbors, star is neighbor, o is origin.
 
-	template <typename size_t dim_>
-	class diamand_neighbor{
+	template <typename size_t dim>
+	class diamand_neighbor: public neighbor_adaptor<diamand_neighbor<dim>, dim>{
 	public:
-		typedef diamand_neighbor                type;
-		static const size_t			            dim =  dim_;
 		static const size_t			            neighbor_num = dim * 2;
-
-		typedef int								value_type;
-		typedef const int &						reference;
-		typedef const int &						const_reference;
-		typedef	point<int, dim>				    extent_type;
-		typedef index_iterator<type>		    iterator;
-		typedef index_iterator<const type>      const_iterator;
-
 
 		diamand_neighbor(){}
 
-		diamand_neighbor &operator=(const type &rhs){
+		diamand_neighbor &operator=(const diamand_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
-		}
-
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), neighbor_num); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, neighbor_num); }
-
-		diamand_neighbor(const extent_type &size): _extent(size){
-			_offsets[0] = 1;
-			_offsets[0+dim] = -1;
-			for (int i = 1; i < dim; ++i){
-				_offsets[i] = _offsets[i-1] * _extent[i-1];
-				_offsets[i + dim] = -_offsets[i];
-			}
 		}
 
 		void attach(const extent_type &size){
@@ -62,113 +53,28 @@ namespace skynet{
 		}
 
 		const int &operator[](const size_t &index) const{
-#ifdef DEUBG
-			//make sure the diamand is initialized;
-			assert(_offsets[0] == 1);
-#endif
 			return _offsets[index];
 		}
 
 		size_t size()const                        { return neighbor_num; }
 
-		int max_offset() const                    { return (*this)[dim-1]; }
-		int min_offset() const                    { return (*this)[2 * dim - 1]; }
-
 	private:
 		extent_type	_extent;
-		std::array<int, neighbor_num>	_offsets;
+		std::array<ptrdiff_t, neighbor_num>	_offsets;
 	};
 
-	//    //* * *
-	//    //* o *
-	//    //* * *
-	//    //It's the square neighbors, the stars are neighbors, 0 is origin.
-	//    template <typename size_t dim_>
-	//    class square_neighbor{
-	//    public:
-	//        typedef square_neighbor                type;
-	//        static const size_t			            dim =  dim_;
-	//        static const size_t			            neighbor_num = dim * 2;
-	//
-	//        typedef int								value_type;
-	//        typedef const int &						reference;
-	//        typedef const int &						const_reference;
-	//        typedef	point<int, dim>				    extent_type;
-	//        typedef index_iterator<type>		    iterator;
-	//        typedef index_iterator<const type>      const_iterator;
-	//
-	//
-	//        square_neighbor(){}
-	//
-	//        square_neighbor &operator=(const type &rhs){
-	//            _extent = rhs._extent;
-	//            _offsets = rhs._offsets;
-	//            return *this;
-	//        }
-	//
-	//        const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-	//        const_iterator end() const                { return const_iterator(const_cast<type *>(this), neighbor_num); }
-	//        iterator begin()                          { return iterator(this, 0); }
-	//        iterator end()                            { return iterator(this, neighbor_num); }
-	//
-	//        square_neighbor(const extent_type &size): _extent(size){
-	//            _offsets[0] = 1;
-	//            _offsets[0+dim] = -1;
-	//            for (int i = 1; i < dim; ++i){
-	//                _offsets[i] = _offsets[i-1] * _extent[i-1];
-	//                _offsets[i + dim] = -_offsets[i];
-	//            }
-	//        }
-	//
-	//        void attach(const extent_type &size){
-	//            _extent = size;
-	//            _offsets[0] = 1;
-	//            _offsets[0+dim] = -1;
-	//            for (int i = 1; i < dim; ++i){
-	//                _offsets[i] = _offsets[i-1] * _extent[i-1];
-	//                _offsets[i + dim] = -_offsets[i];
-	//            }
-	//        }
-	//
-	//        const int &operator[](const size_t &index) const{
-	//#ifdef DEUBG
-	//            //make sure the diamand is initialized;
-	//            assert(_offsets[0] == 1);
-	//#endif
-	//            return _offsets[index];
-	//        }
-	//
-	//        size_t size()const                        { return neighbor_num; }
-	//
-	//        int max_offset() const                    { return (*this)[dim-1]; }
-	//        int min_offset() const                    { return (*this)[2 * dim - 1]; }
-	//
-	//    private:
-	//        extent_type	_extent;
-	//        std::array<int, neighbor_num>	_offsets;
-	//    };
 
-	/*                                 *
+	/*									*
 
-	*   *   *
+									*	*   *
 
-	*
+										*
 	It's the vertex_neighbors
 	*/
-	template <typename size_t dim_>
-	class vertex_neighbor{
+	template <typename size_t dim>
+	class vertex_neighbor: public neighbor_adaptor<vertex_neighbor<dim>,dim>{
 	public:
-		typedef vertex_neighbor                             type;
-		static	const size_t			                    dim =  dim_;
-		typedef point<int, dim>				                extent_type;
 		static  const size_t			                    neighbor_num = extent_type::dim * 2 + 1;
-
-		typedef typename int								value_type;
-		typedef typename const int &						reference;
-		typedef typename const int &						const_reference;
-		typedef index_iterator<type>				        iterator;
-		typedef index_iterator<const type>                  const_iterator;
-
 
 		vertex_neighbor() {}
 
@@ -183,10 +89,6 @@ namespace skynet{
 		}
 
 		const int &operator  [](const size_t &index) const{
-#ifdef DEUBG
-			//make sure the diamand is initialized;
-			assert(_offsets[0] == 1);
-#endif
 			return _offsets[index];
 		}
 
@@ -205,14 +107,6 @@ namespace skynet{
 			return _radius;
 		}
 
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), neighbor_num); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, neighbor_num); }
-
-		int max_offset() const            { return (*this)[dim - 1]; }
-		int min_offset() const            { return (*this)[2 * dim - 1]; }
-
 		size_t size() const                  { return neighbor_num; }
 
 	private:
@@ -222,38 +116,19 @@ namespace skynet{
 	};
 
 	template <typename size_t dim_>
-	class squared_neighbor;
+	class square_neighbor;
 
 	template <>
-	class squared_neighbor<3>{
+	class square_neighbor<3>:  public neighbor_adaptor<square_neighbor<3>, 3>{
 	public:
-		typedef squared_neighbor                type;
-		static const size_t			            dim =  3;
 		static const size_t			            neighbor_num = 26;
 
-		typedef int								value_type;
-		typedef const int &						reference;
-		typedef const int &						const_reference;
-		typedef	point<int, dim>				    extent_type;
-		typedef index_iterator<type>		    iterator;
-		typedef index_iterator<const type>      const_iterator;
+		square_neighbor(){}
 
-
-		squared_neighbor(){}
-
-		squared_neighbor &operator=(const type &rhs){
+		square_neighbor &operator=(const square_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
-		}
-
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), neighbor_num); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, neighbor_num); }
-
-		squared_neighbor(const extent_type &extent){
-			attach(extent);
 		}
 
 		void attach(const extent_type &extent){
@@ -280,45 +155,22 @@ namespace skynet{
 		}
 
 		size_t size()const                        { return neighbor_num; }
-
-		int max_offset() const                    { return (*this)[neighbor_num-1]; }
-		int min_offset() const                    { return (*this)[0]; }
-
 	private:
 		extent_type	_extent;
 		std::array<int, neighbor_num>	_offsets;
 	};
 
 	template <>
-	class squared_neighbor<2>{
+	class square_neighbor<2> : public neighbor_adaptor<square_neighbor<2>,2> {
 	public:
-		typedef squared_neighbor                type;
-		static const size_t			            dim =  2;
 		static const size_t			            neighbor_num = 8;
 
-		typedef int								value_type;
-		typedef const int &						reference;
-		typedef const int &						const_reference;
-		typedef	point<int, dim>				    extent_type;
-		typedef index_iterator<type>		    iterator;
-		typedef index_iterator<const type>      const_iterator;
+		square_neighbor(){}
 
-
-		squared_neighbor(){}
-
-		squared_neighbor &operator=(const type &rhs){
+		square_neighbor &operator=(const square_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
-		}
-
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), neighbor_num); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, neighbor_num); }
-
-		squared_neighbor(const extent_type &extent){
-			attach(extent);
 		}
 
 		void attach(const extent_type &extent){
@@ -343,9 +195,6 @@ namespace skynet{
 
 		size_t size()const                        { return neighbor_num; }
 
-		int max_offset() const                    { return (*this)[neighbor_num-1]; }
-		int min_offset() const                    { return (*this)[0]; }
-
 	private:
 		extent_type	_extent;
 		std::array<int, neighbor_num>	_offsets;
@@ -356,36 +205,15 @@ namespace skynet{
 	class cubic_neighbor;
 
 	template <>
-	class cubic_neighbor<3>{
+	class cubic_neighbor<3>: public neighbor_adaptor<cubic_neighbor<3>,3>{
 	public:
-		typedef cubic_neighbor                  type;
-		static const size_t			            dim =  3;
-		//   static const size_t			            neighbor_num = 27;
-
-		typedef int								value_type;
-		typedef const int   					reference;
-		typedef const int  						const_reference;
-		typedef	point<int, dim>				    extent_type;
-		typedef index_iterator<type>		    iterator;
-		typedef index_iterator<const type>      const_iterator;
-
-
-		cubic_neighbor(){}
-
-		cubic_neighbor &operator=(const type &rhs){
+		cubic_neighbor &operator=(const cubic_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
 		}
 
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), size()); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, size()); }
-
-		cubic_neighbor(const int radius): _radius(radius){
-			// attach(extent);
-		}
+		cubic_neighbor(const int radius = 1): _radius(radius){}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
@@ -403,18 +231,10 @@ namespace skynet{
 		}
 
 		const int operator[](const size_t &index) const{
-#ifdef DEUBG
-			//make sure the diamand is initialized;
-			assert(_offsets[0] == 1);
-#endif
 			return _offsets[index];
 		}
 
 		size_t size()const                        { return _offsets.size(); }
-
-		int max_offset() const                    { return (*this)[dim-1]; }
-		int min_offset() const                    { return (*this)[2 * dim - 1]; }
-
 	private:
 		extent_type	_extent;
 		std::vector<size_t>	_offsets;
@@ -422,32 +242,15 @@ namespace skynet{
 	};
 
 	template <>
-	class cubic_neighbor<2>{
+	class cubic_neighbor<2>: public neighbor_adaptor<cubic_neighbor<2>, 2>{
 	public:
-		typedef cubic_neighbor                  type;
-		static const size_t			            dim =  2;
-		typedef int								value_type;
-		typedef const int   					reference;
-		typedef const int  						const_reference;
-		typedef	point<int, dim>				    extent_type;
-		typedef index_iterator<type>		    iterator;
-		typedef index_iterator<const type>      const_iterator;
-
-
-		cubic_neighbor(){}
-
-		cubic_neighbor &operator=(const type &rhs){
+		cubic_neighbor &operator=(const cubic_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
 		}
 
-		const_iterator begin() const              { return const_iterator(const_cast<type *>(this), 0); }
-		const_iterator end() const                { return const_iterator(const_cast<type *>(this), size()); }
-		iterator begin()                          { return iterator(this, 0); }
-		iterator end()                            { return iterator(this, size()); }
-
-		cubic_neighbor(const int radius): _radius(radius){
+		cubic_neighbor(const int radius = 1): _radius(radius){
 			// attach(extent);
 		}
 
@@ -464,17 +267,10 @@ namespace skynet{
 		}
 
 		const int operator[](const size_t &index) const{
-#ifdef DEUBG
-			//make sure the diamand is initialized;
-			assert(_offsets[0] == 1);
-#endif
 			return _offsets[index];
 		}
 
 		size_t size()const                        { return _offsets.size(); }
-
-		int max_offset() const                    { return (*this)[dim-1]; }
-		int min_offset() const                    { return (*this)[2 * dim - 1]; }
 
 	private:
 		extent_type	_extent;
@@ -490,5 +286,4 @@ namespace skynet{
 		}
 	}
 	//
-#pragma endregion
 }

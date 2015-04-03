@@ -44,8 +44,8 @@ namespace skynet{
 		const_iterator end() const                          { return _array.end(); }
 		iterator end()                                      { return _array.end(); }
 
-		inline  const value_type &operator[](size_t index)	const	{ return _array[index]; }
-		inline	value_type &operator[](size_t index)				{ return _array[index]; }
+		inline  const_reference operator[](size_t index)	const	{ return _array[index]; }
+		inline	reference operator[](size_t index)					{ return _array[index]; }
 
 		size_t size() const        { return _array.size(); }
 
@@ -72,8 +72,8 @@ namespace skynet{
 		typedef const value_type &                      const_reference;
 		const static size_t								dim = 2;
 
-		typedef index_iterator<type>					iterator;
-		typedef index_iterator<const type>				const_iterator;
+		typedef detail::index_iterator<type>					iterator;
+		typedef detail::index_iterator<const type>				const_iterator;
 
 
 		point( ) : x(0), y(0) { }
@@ -139,8 +139,8 @@ namespace skynet{
 		typedef const value_type &                      const_reference;
 		const static size_t								dim = 3;
 
-		typedef index_iterator<type>					iterator;
-		typedef index_iterator<const type>				const_iterator;
+		typedef detail::index_iterator<type>					iterator;
+		typedef detail::index_iterator<const type>				const_iterator;
 
 		point() : x(0), y(0), z(0) { }
 
@@ -196,7 +196,6 @@ namespace skynet{
 	const point<T, 3U> point<T, 3U>::unit = point<T, 3U>(1, 1, 1);
 
 
-#pragma region operation(+,-...)
 	template <typename T, size_t D>
 	bool operator==(const point<T, D> &lhs, const point<T, D> &rhs){
 		for (int i = 0; i < D; ++i){
@@ -399,13 +398,23 @@ namespace skynet{
 
 	///point is used by std::vector sometimes, so we define the operation for it
 	///-----------------define the std::vector operation----------------------------------
-	class Euclidean_tag{};
-	class street_tag{};
-	class max_nor_tag{};
-	class min_nor_tag{};
+	class Euclidean{};
+	class street{};
+	//class max_nor_tag{};
+	//class min_nor_tag{};
+
+	template <typename T, size_t D>
+	T square_sum(const point<T, D> &p) {
+		T re(0);
+		for (int i = 0; i < D; ++i) {
+			re += p[0] * p[0];
+		}
+
+		return re;
+	}
 		
 	template <typename T, size_t D>
-	T norm(const point<T, D> &p, const Euclidean_tag &){
+	T norm(const point<T, D> &p, const Euclidean &d){
 		T temp = 0;
 		for (int i = 0; i < D; ++i){
 			temp += p[i] * p[i];
@@ -416,7 +425,7 @@ namespace skynet{
 
 	
 	template <typename T, size_t D>
-	T norm(const point<T, D> &p, const street_tag &){
+	T norm(const point<T, D> &p, const street &d){
 		T temp = 0;
 		for (int i = 0; i < D; ++i){
 			temp += std::abs(p[i]); 
@@ -425,14 +434,19 @@ namespace skynet{
 		return temp;
 	}
 
-	template <typename T, size_t D>
-	T norm(const point<T, D> &p){
-		return norm(p, Euclidean_tag());
+	template <typename Distance, typename T, size_t D>
+	T norm(const point<T, D> &p) {
+		return norm(p, Distance());
 	}
 
-	template <typename T, size_t D, typename distance_tag>
-	T distance(const point<T, D> &lhs, const point<T, D> &rhs, const distance_tag &){
-		return norm(lhs - rhs, distance_tag());
+	//template <typename T, size_t D>
+	//T norm(const point<T, D> &p){
+	//	return norm(p, Euclidean());
+	//}
+
+	template < typename Distance, typename T, size_t D>
+	T distance(const point<T, D> &lhs, const point<T, D> &rhs){
+		return norm<Distance>(lhs - rhs);
 	}
 
 	template <typename T>
@@ -441,10 +455,7 @@ namespace skynet{
 			return std::abs(lhs-rhs);
 	}
 
-	template <typename T, size_t D>
-	T distance(const point<T, D> &lhs, const point<T, D> &rhs){
-		return distance(lhs, rhs, Euclidean_tag());
-	}
+
 
 	template <typename T, size_t D>
 	point<T, D> center_point(const point<T, D> &fir, const point<T, D> &sec){
@@ -455,11 +466,11 @@ namespace skynet{
 		return center;
 	}
 
-	template <size_t D>
-	point<float, D> normalize(const point<float, D>  &p){
-		auto n = norm(p) + std::numeric_limits<float>::epsilon();
+	template <typename T, size_t D>
+	point<T, D> normalize(const point<T, D>  &p){
+		auto n = norm<Euclidean>(p) + std::numeric_limits<T>::epsilon();
 
-		point<float, D> temp;
+		point<T, D> temp;
 		for (int i = 0; i < D; ++i){
 			temp[i] = p[i] / n; 
 		}
@@ -467,17 +478,17 @@ namespace skynet{
 		return temp;
 	}
 
-	template <size_t D>
-	point<double, D> normalize(const point<double, D>  &p){
-		auto n = norm(p) + std::numeric_limits<double>::epsilon();
+	//template <size_t D>
+	//point<double, D> normalize(const point<double, D>  &p){
+	//	auto n = norm(p) + std::numeric_limits<double>::epsilon();
 
-		point<double, D> temp;
-		for (int i = 0; i < D; ++i){
-			temp[i] = p[i] / n; 
-		}
+	//	point<double, D> temp;
+	//	for (int i = 0; i < D; ++i){
+	//		temp[i] = p[i] / n; 
+	//	}
 
-		return temp;
-	}
+	//	return temp;
+	//}
 	
 	template <typename T, size_t D>
 	T product(const point<T, D> &lhs, const point<T, D> &rhs){
@@ -497,8 +508,7 @@ namespace skynet{
 
 		return temp;
 	}
-	
-#pragma endregion
+
 
 	///-----------------typdef the size type and index type
 	typedef point<int, 2> extent2;

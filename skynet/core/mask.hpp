@@ -1,14 +1,13 @@
-******************************************************************************
+/******************************************************************************
 Created By : Zhang Zhimin
 Created On : 2012/11/21
 Purpose    :  
 ********************************************************************************/
 
 #pragma once
-
 #include <skynet/core/array.hpp>
 #include <skynet/core/neighbor.hpp>
-#include <skynet/utility/iterator_facade.hpp>
+
 #include <skynet/utility/math.hpp>
 #include <skynet/utility/parse.hpp>
 
@@ -18,7 +17,7 @@ namespace skynet{
 	namespace detail{
 		template <typename T>
 		struct mask_element{
-			int pos;
+			ptrdiff_t pos;
 			T weight;
 		};
 
@@ -34,36 +33,26 @@ namespace skynet{
 	using detail::mask_element;
 
 
-	template <typename B, typename size_t dim_, typename WeightType = int>
-	class mask_adaptor{
+	template <typename B, typename size_t dim_, typename Weight = int8_t>
+	class mask_adaptor : public iterator_adaptor<B>{
 	public:
 		typedef B                                       mask_type;
 		static const size_t                             dim = dim_;
-		typedef point<int, dim>                         extent_type;
-		typedef mask_element<WeightType>                value_type;
+		typedef point<ptrdiff_t, dim>                   extent_type;
+		typedef mask_element<Weight>					value_type;
 		typedef const value_type &                      reference;
 		typedef const value_type &                      const_reference;
-		typedef index_iterator<mask_type>               iterator;
-		typedef index_iterator<const mask_type>         const_iterator;
 
-		const mask_type &operator()() const             { return *static_cast<const mask_type *>(this); }
-		mask_type &operator()()                         { return *static_cast<mask_type *>(this); }
-
-		iterator begin()                                { return iterator(&((*this)()), 0); }
-		iterator end()                                  { return iterator(&((*this)()), (*this)().size()); }
-		const_iterator begin() const	{ return const_iterator(const_cast<mask_type *>(&((*this)())), 0); }
-		const_iterator end() const		{ return const_iterator(const_cast<mask_type *>(&((*this)())), (*this)().size()); }
-
-		int max_offset() const { 
+		ptrdiff_t max_offset() const { 
 			return (*std::max_element(begin(), end(), detail::pos_cmp())).pos;
 		}
 
-		int min_offset() const {
+		ptrdiff_t min_offset() const {
 			return (*std::min_element(begin(), end(), detail::pos_cmp())).pos;
 		} 
 
-		WeightType weight_sum() const {
-			WeightType temp = 0;
+		Weight weight_sum() const {
+			Weight temp = 0;
 			for (auto it = begin(); it != end(); ++it){
 				temp += it->weight;
 			}
@@ -77,12 +66,12 @@ namespace skynet{
 	public:
 		typedef mean_mask                               type;
 		static const size_t                             dim = dim_;
-		typedef point<int, dim>                         extent_type;
-		typedef mask_element<int>                       value_type;
+		typedef point<size_t, dim>						extent_type;
+		typedef mask_element<ptrdiff_t>                 value_type;
 		typedef const value_type &                      reference;
 		typedef const value_type &                      const_reference;
-		typedef index_iterator<type>                    iterator;
-		typedef index_iterator<const type>              const_iterator;
+		typedef detail::index_iterator<type>                    iterator;
+		typedef detail::index_iterator<const type>              const_iterator;
 
 		mean_mask() {}
 
@@ -90,11 +79,10 @@ namespace skynet{
 			_extent = extent;
 			diamand_neighbor<dim> neighbors(_extent);
 
-			for (int i = 0; i < neighbors.size(); ++i){
+			for (size_t i = 0; i < neighbors.size(); ++i){
 				_elements[i].weight = 1;
 				_elements[i].pos = neighbors[i];
 			}
-
 		}
 
 	private:
@@ -104,18 +92,19 @@ namespace skynet{
 
 
 	template <typename size_t dim_, typename size_t dir_>
-	class center_derivative_mask : public mask_adaptor<center_derivative_mask<dim_, dir_>, dim_>{
+	class center_difference_mask : public mask_adaptor<center_difference_mask<dim_, dir_>, dim_>{
 	public:
 		static const size_t dim = dim_;
 		static const size_t direction = dir_;
 
-		center_derivative_mask() : _radius(1){}
-		center_derivative_mask(const int &radius) : _radius(radius) {}
+		center_difference_mask() : _radius(1){}
+		center_difference_mask(const ptrdiff_t &radius) : _radius(radius) {}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
 
-			diamand_neighbor<dim> neighbors(extent);
+			diamand_neighbor<dim> neighbors;
+			neighbors.attach(extent);
 			_elements[0].weight = 1;
 			_elements[0].pos = neighbors[direction] * _radius;
 			_elements[1].weight = -1;
@@ -128,7 +117,7 @@ namespace skynet{
 	private:
 		extent_type                                    _extent;
 		std::array<value_type, 2>                      _elements;
-		int                                            _radius;
+		ptrdiff_t                                            _radius;
 	};
 
 
@@ -138,13 +127,12 @@ namespace skynet{
 		static const size_t dim = dim_;
 
 		gaussian_mask() {}
-		gaussian_mask(const int &radius) : _radius(radius) {}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
-			diamand_neighbor<dim> neighbors(extent);
-			for (int i = 0; i < neighbors.size(); ++i){
-				_elements[i].pos = neighbors[i] * _radius;
+			diamand_neighbor<dim> neighbors;neighbors.attach(extent);
+			for (size_t i = 0; i < neighbors.size(); ++i){
+				_elements[i].pos = neighbors[i];
 				_elements[i].weight = 1;
 			}
 
@@ -156,7 +144,6 @@ namespace skynet{
 		size_t size() const                                 { return dim*2U + 1U; }
 
 	private:
-		int                                     _radius;
 		extent_type                             _extent;
 		std::array<value_type, dim * 2 + 1>     _elements;
 	};
@@ -168,25 +155,25 @@ namespace skynet{
 		static const size_t dim = dim_;
 
 		laplace_mask() : _radius(1) {}
-		laplace_mask(const int &radius) : _radius(radius) {}
+		laplace_mask(const ptrdiff_t &radius) : _radius(radius) {}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
-			diamand_neighbor<dim> neighbors(extent);
-			for (int i = 0; i < neighbors.size(); ++i){
+		 diamand_neighbor<dim> neighbors;neighbors.attach(extent);
+			for (ptrdiff_t i = 0; i < neighbors.size(); ++i){
 				_elements[i].pos = neighbors[i] * _radius;
 				_elements[i].weight = 1;
 			}
 
 			_elements[dim*2].pos = 0;
-			_elements[dim*2].weight = -int(dim)*2;
+			_elements[dim*2].weight = -ptrdiff_t(dim)*2;
 		}
 
 		const_reference operator[](const size_t &i) const   { return _elements[i]; }
 		size_t size() const                                 { return dim*2U + 1U; }
 
 	private:
-		int                                     _radius;
+		ptrdiff_t                                     _radius;
 		extent_type                             _extent;
 		std::array<value_type, dim * 2 + 1>     _elements;
 	};
@@ -201,12 +188,12 @@ namespace skynet{
 		static const size_t direction = Dir;
 
 		pre_derivative_mask() : _radius(1){}
-		pre_derivative_mask(const int &radius) : _radius(radius) {}
+		pre_derivative_mask(const ptrdiff_t &radius) : _radius(radius) {}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
 
-			diamand_neighbor<dim> neighbors(extent);
+		 diamand_neighbor<dim> neighbors;neighbors.attach(extent);
 			_elements[0].weight = 1;
 			_elements[0].pos = neighbors[direction] * _radius;
 			_elements[1].weight = -1;
@@ -219,41 +206,40 @@ namespace skynet{
 	private:
 		extent_type										_extent;
 		std::array<value_type, 2>						_elements;
-		int												_radius;
+		ptrdiff_t												_radius;
 	};
 
 
-	class corner_derivative_mask : public mask_adaptor<corner_derivative_mask, 2>{
-	public:
-		static const size_t dim = 2;
+	//class roberts_mask : public mask_adaptor<roberts_mask, 2, int8_t>{
+	//public:
+	//	static const size_t dim = 2;
 
-		corner_derivative_mask(){}
+	//	roberts_mask(){}
 
-		void attach(const extent_type &extent){
-			_extent = extent;
-			diamand_neighbor<dim> neighbors(extent);
-			_elements[0].weight = 1;
-			_elements[0].pos = 0;
-			_elements[1].weight = 1;
-			_elements[1].pos = neighbors[0]  + neighbors[1];
-			_elements[2].weight = -1;
-			_elements[2].pos = neighbors[0];
-			_elements[3].weight = -1;
-			_elements[3].pos = neighbors[1];
-		}
+	//	void attach(const extent_type &extent){
+	//		_extent = extent;
+	//	 diamand_neighbor<dim> neighbors;neighbors.attach(extent);
+	//		_elements[0].weight = 1;
+	//		_elements[0].pos = 0;
+	//		_elements[1].weight = 1;
+	//		_elements[1].pos = neighbors[0]  + neighbors[1];
+	//		_elements[2].weight = -1;
+	//		_elements[2].pos = neighbors[0];
+	//		_elements[3].weight = -1;
+	//		_elements[3].pos = neighbors[1];
+	//	}
 
-		const_reference operator[](const size_t &i) const    { return _elements[i]; }
-		size_t size() const                                  { return 4; }
+	//	const_reference operator[](const size_t &i) const    { return _elements[i]; }
+	//	size_t size() const                                  { return 4; }
 
-	private:
-		extent_type										_extent;
-		std::array<value_type, 4>						_elements;
-	};
+	//private:
+	//	extent_type										_extent;
+	//	std::array<value_type, 4>						_elements;
+	//};
 
 
 	template <typename size_t Dir>
 	class prewitt_mask;
-
 
 	template <>
 	class prewitt_mask<0U> : public mask_adaptor<prewitt_mask<0U>, 2>{
@@ -262,7 +248,8 @@ namespace skynet{
 
 		void attach(const extent_type &extent){
 			_extent = extent;
-			diamand_neighbor<dim> neighbors(extent);
+			diamand_neighbor<dim> neighbors;
+			neighbors.attach(extent);
 			_elements[0].weight = 1;
 			_elements[0].pos = neighbors[0] - neighbors[1];
 			_elements[1].weight = 1;
@@ -294,7 +281,8 @@ namespace skynet{
 
 		void attach(const extent_type &extent){
 			_extent = extent;
-			diamand_neighbor<dim> neighbors(extent);
+			diamand_neighbor<dim> neighbors;
+			neighbors.attach(extent);
 			_elements[0].weight = 1;
 			_elements[0].pos = neighbors[1] - neighbors[0];
 			_elements[1].weight = 1;
@@ -317,6 +305,73 @@ namespace skynet{
 		extent_type										_extent;
 		std::array<value_type, 6>						_elements;
 	};
+
+
+	//template <typename size_t Dir>
+	//class sobel_mask;
+
+	//template <>
+	//class sobel_mask<0U> : public mask_adaptor<sobel_mask<0U>, 2>{
+	//public:
+	//	static const size_t dim = 2;
+
+	//	void attach(const extent_type &extent) {
+	//		_extent = extent;
+	//	 diamand_neighbor<dim> neighbors;neighbors.attach(extent);
+	//		_elements[0].weight = 1;
+	//		_elements[0].pos = neighbors[0] - neighbors[1];
+	//		_elements[1].weight = 1;
+	//		_elements[1].pos = neighbors[0];
+	//		_elements[2].weight = 1;
+	//		_elements[2].pos = neighbors[0] + neighbors[1];
+
+	//		_elements[3].weight = -1;
+	//		_elements[3].pos = -_elements[0].pos;
+	//		_elements[4].weight = -1;
+	//		_elements[4].pos = -_elements[1].pos;
+	//		_elements[5].weight = -1;
+	//		_elements[5].pos = -_elements[2].pos;
+	//	}
+
+	//	const_reference operator[](const size_t &i) const { return _elements[i]; }
+	//	size_t size() const { return 6; }
+
+	//private:
+	//	extent_type										_extent;
+	//	std::array<value_type, 6>						_elements;
+	//};
+
+
+	//template <>
+	//class sobel_mask<1U> : public mask_adaptor<sobel_mask<1U>, 2>{
+	//public:
+	//	static const size_t dim = 2;
+
+	//	void attach(const extent_type &extent) {
+	//		_extent = extent;
+	//	 diamand_neighbor<dim> neighbors;neighbors.attach(extent);
+	//		_elements[0].weight = 1;
+	//		_elements[0].pos = neighbors[1] - neighbors[0];
+	//		_elements[1].weight = 1;
+	//		_elements[1].pos = neighbors[1];
+	//		_elements[2].weight = 1;
+	//		_elements[2].pos = neighbors[1] + neighbors[0];
+
+	//		_elements[3].weight = -1;
+	//		_elements[3].pos = -_elements[0].pos;
+	//		_elements[4].weight = -1;
+	//		_elements[4].pos = -_elements[1].pos;
+	//		_elements[5].weight = -1;
+	//		_elements[5].pos = -_elements[2].pos;
+	//	}
+
+	//	const_reference operator[](const size_t &i) const { return _elements[i]; }
+	//	size_t size() const { return 6; }
+
+	//private:
+	//	extent_type										_extent;
+	//	std::array<value_type, 6>						_elements;
+	//};
 
 
 	template <typename T, typename size_t dim = 2>

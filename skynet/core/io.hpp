@@ -4,7 +4,7 @@
 #include <skynet/core/array.hpp>
 #include <skynet/utility/exception.hpp>
 
-namespace skynet{
+namespace skynet{namespace io{
 	
 	template <typename T, size_t D>
 	std::ostream &operator<<(std::ostream &os, const std::array<T, D> &mat){
@@ -19,25 +19,6 @@ namespace skynet{
 	}
 
 	
-    template <typename C>
-    void write2raw(const C &mat, const string &file){
-        std::ofstream os(file, std::ios::binary);
-		
-		for(int i = 0; i < mat.size(); ++i){
-			auto temp = mat[i];
-			os.write((char *)&temp, sizeof(typename C::value_type));
-		}
-    }
-
-	template <typename C>
-	void read4raw(C &container, const string &filepath){
-		std::ifstream is(filepath, std::ios:: binary);
-
-		for (int i = 0; i < container.size(); ++i){
-			is.read((char *)&(container[i]), sizeof(typename C::value_type));
-		}
-	}
-
 	template <typename T, size_t D>
 	void writemtx(const multi_array<T, D> &mat, const string &file){
 		std::ofstream os(file, std::ios::binary);
@@ -48,6 +29,13 @@ namespace skynet{
 		os.write((char *)(mat.buffer().get()), mat.size() * sizeof(T));
 	}
 
+	//template <typename M>
+	//void writemtx(const M &mat, const string &file) {
+	//	multi_array<typename M::value_type, M::dim> raw_data(mat.extent());
+	//	copy(mat, raw_data);
+	//	writemtx(raw_data, file);
+	//}
+
 	template <typename T, size_t D>
 	void readmtx(multi_array<T, D> &mat, const string &file){
 		std::ifstream is(file, std::ios::binary);
@@ -57,4 +45,4 @@ namespace skynet{
 
 		is.read((char *)(mat.buffer().get()), mat.size() * sizeof(T));
 	}
-}
+}}

@@ -40,4 +40,5 @@ namespace skynet{namespace cv{
 		return target;
 	}
 
+	//0.27*e.r + 0.71*e.g + 0.07*e.b
 }}

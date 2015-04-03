@@ -54,7 +54,7 @@ namespace skynet {
 		size_t slide = 1;
 		for (int i = 0; i < extent_type::dim; ++i){
 			pos += slide * index[i];
-			slide *= extent[1];
+			slide *= extent[i];
 		}
 
 		return pos;
@@ -109,13 +109,13 @@ namespace skynet {
 			#endif
 
 			for (int col = 0; col < size.x; ++ col){
-				mat.set_value(index2(col, 0), value);
-				mat.set_value(index2(col, size.y - 1), value);
+				mat(index2(col, 0)) = value;
+				mat(index2(col, size.y - 1)) = value;
 			}
 
 			for (int row = 0; row < size.y; ++row){
-				mat.set_value(index2(0,row), value);
-				mat.set_value(index2(size.x-1, row), value);
+				mat(index2(0,row)) =value;
+				mat(index2(size.x - 1, row))= value;
 			}
 		}
 	};

@@ -7,7 +7,6 @@
 #include <stdexcept>
 #include <boost/any.hpp>
 
-
 namespace skynet{namespace cv{
 
 	typedef multi_array<cv::bgr, 2>				image_bgr;
@@ -50,7 +49,6 @@ namespace skynet{namespace cv{
 	struct image2type<unsigned int>{
 		static const image_type type = image_type::gray32;
 	};
-
 
 	template <>
 	struct image2type<cv::rgb>{

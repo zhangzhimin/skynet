@@ -168,6 +168,8 @@ namespace skynet{
 #pragma error("The CHECK_INDEX is defined")
 #endif
 
+#define ASSERT_SAME_EXTENT(lhs, rhs)	ASSERT(lhs.extent() == rhs.extent(), "the extents is not match")
+
 
 
 #ifdef ENABLE_ASSERT_PLUS

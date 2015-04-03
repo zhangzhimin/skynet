@@ -7,7 +7,7 @@
 #include <boost/numeric/ublas/symmetric.hpp>
 #include <boost/numeric/ublas/banded.hpp>
 
-#include <skynet/utility/algorithm.hpp>
+#include <skynet/core/algorithm.hpp>
 
 namespace skynet{
 

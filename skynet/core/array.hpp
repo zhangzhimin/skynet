@@ -6,18 +6,17 @@ Purpose    : Implements the std::array
 #pragma once
 
 #include <skynet/core/point.hpp>
-#include <skynet/core/array_express.hpp>
+#include <skynet/core/expression_types.hpp>
 #include <skynet/core/shared_buffer.hpp>
 #include <skynet/core/common.hpp>
-#include <skynet/utility/algorithm.hpp>
+#include <skynet/core/algorithm.hpp>
 
 #include <unordered_map>
 
 namespace skynet{
 
-	
 	template <typename T, size_t D, typename B = shared_buffer<T>>
-	class multi_array: array_express<multi_array<T, D, B>>{
+	class multi_array: public array_expression<multi_array<T, D, B>>{
 	public:
 		typedef T								value_type; 
 		static	const size_t					dim = D;
@@ -26,8 +25,8 @@ namespace skynet{
 		typedef typename B::const_reference     const_reference;
 		typedef typename B::iterator			iterator;
 		typedef typename B::const_iterator		const_iterator;
-		typedef point<int, dim>					index_type;
-		typedef point<int, dim>					extent_type;
+		typedef point<ptrdiff_t, dim>					index_type;
+		typedef point<ptrdiff_t, dim>					extent_type;
 
 		multi_array() : _buffer(), _extent() {}
 
@@ -55,24 +54,6 @@ namespace skynet{
 			_slide = rhs._slide;
 
 			return *this;
-		}
-
-		const_reference &get_value(const index_type &loc) const {
-			size_t pos = loc[0];
-
-			for (int i = 1; i < dim; ++i){	
-				pos += loc[i] * _slide[i - 1];
-			} 
-			return _buffer[pos];
-		}
-
-		void set_value(const index_type &loc, value_type v){
-			size_t pos = loc[0];
-			for (int i = 1; i < dim; ++i){	
-				pos += loc[i] * _slide[i - 1];
-			} 
-
-			_buffer[pos] = v;
 		}
 
 		const_reference operator()(const index_type &index) const{
@@ -144,7 +125,7 @@ namespace skynet{
 
 
 	template <typename M, byte bit_mask_>
-	class bit_array: public array_express<bit_array<M,bit_mask_>>{
+	class bit_array: public array_expression<bit_array<M,bit_mask_>>{
 	public:
 		template <bool is_const>
 		class bit;
@@ -162,8 +143,8 @@ namespace skynet{
 		typedef bool                                    value_type;
 		typedef bit<false>                              reference;
 		typedef bit<true>                               const_reference;
-		typedef index_iterator<type>                    iterator;
-		typedef index_iterator<const type>              const_iterator;
+		typedef detail::index_iterator<type>                    iterator;
+		typedef detail::index_iterator<const type>              const_iterator;
 
 		template <bool is_const>
 		class bit{
@@ -228,7 +209,7 @@ namespace skynet{
 	};
 
 	template <typename T, size_t D, typename Hash = boost::hash<size_t>>
-	class hash_array: array_express<hash_array<T, D, Hash>>{
+	class hash_array: array_expression<hash_array<T, D, Hash>>{
 	public:
 		typedef hash_array                             type;
 		static const size_t                             dim = D;
@@ -264,7 +245,7 @@ namespace skynet{
 	};
 
 	template <typename M>
-	class clamp_array : array_express<clamp_array<M>>{
+	class clamp_array : array_expression<clamp_array<M>>{
 	public:
 		typedef clamp_array							type;
 		typedef typename M::value_type					value_type;

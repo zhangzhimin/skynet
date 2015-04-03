@@ -6,9 +6,7 @@ Purpose    :
 
 #pragma once
 
-#include <skynet/core/detail.hpp>
-#include <skynet/geometry/region.hpp>
-#include <skynet/core/multi_array.hpp>
+#include <skynet/core/array.hpp>
 #include <skynet/core/neighbor.hpp>
 #include <skynet/utility/math.hpp>
 
@@ -18,9 +16,6 @@ Purpose    :
 #pragma message("the dilate_grow maybe has the performance problem.")
 
 namespace skynet{namespace cv{
-	using namespace skynet;
-	using std::shared_ptr;
-	//==================================================region grow================================================
 
 	template <typename M1, typename M2>
 	void region_grow(const M1 &in_image, M2 &out_image, const size_t &seed){
@@ -87,29 +82,27 @@ namespace skynet{namespace cv{
 
 
 	template <typename M>
-	region<M::dim> get_region(const M &in_image, const size_t &seed){
+	std::vector<size_t> get_region(const M &in_image, const size_t &seed){
 		auto extent = in_image.extent();
 		multi_array<bool, M::dim> flag_mat(extent);
-		flag_mat.set_all_zero();
+		fill(flag_mat, 0);
 		set_boundary(flag_mat, 1);
 
 		std::vector<size_t> roots;
 		roots.reserve(1000000);	
 		roots.push_back(seed);
 
-		region<M::dim> region;
+		std::vector<size_t> region;
 		if (!in_image[seed]){
-			LOG_WARNING("the seed is not 1-flag");
 			return region;
 		}
 		if (flag_mat[seed] != 0){
-			LOG_WARNING("the seed is in boundary, it's invalid");
 			return region;
 		}
 
-		region.attach(extent);
-		region.add(seed);
-		const diamand_neighbor<M::dim> neighbors(extent);
+		region.push_back(seed);
+		diamand_neighbor<M::dim> neighbors;
+		neighbors.attach(extent);
 
 		while (!roots.empty()){
 			auto root = roots.back();
@@ -121,55 +114,55 @@ namespace skynet{namespace cv{
 				if(in_image[offset]&& !flag_mat[offset]){
 					roots.push_back(offset);
 					flag_mat[offset] = true;;
-					region.add(offset);
+					region.push_back(offset);
 				}
 			}
 		}	
 
-		set_boundary(flag_mat, 0);
+		//set_boundary(flag_mat, 0);
 		return region;
 	}
 
 
-	template <typename M>
-	std::vector<region<M::dim>> get_regions(const M &in_image){
-		auto extent = in_image.extent();
-		multi_array<byte, M::dim> flag_mat(extent);
-		flag_mat.set_all_zero();
-		skynet::set_boundary(flag_mat, 1);
+	//template <typename M>
+	//std::vector<region<M::dim>> get_regions(const M &in_image){
+	//	auto extent = in_image.extent();
+	//	multi_array<byte, M::dim> flag_mat(extent);
+	//	flag_mat.set_all_zero();
+	//	skynet::set_boundary(flag_mat, 1);
 
-		std::vector<region<M::dim>> regions;
+	//	std::vector<region<M::dim>> regions;
 
-		for (uint i = 0; i < in_image.size(); ++i){
-			if (!in_image[i] || flag_mat[i] != 0)  continue;
+	//	for (uint i = 0; i < in_image.size(); ++i){
+	//		if (!in_image[i] || flag_mat[i] != 0)  continue;
 
-			std::vector<size_t> roots;
-			roots.reserve(in_image.size()>>(M::dim<<1));
-			roots.push_back(i);
+	//		std::vector<size_t> roots;
+	//		roots.reserve(in_image.size()>>(M::dim<<1));
+	//		roots.push_back(i);
 
-			region<M::dim> region(extent);
-			const diamand_neighbor<M::dim> neighbors(extent);
+	//		region<M::dim> region(extent);
+	//		const diamand_neighbor<M::dim> neighbors(extent);
 
-			while (!roots.empty()){
-				auto root = roots.back();
-				roots.pop_back();	
+	//		while (!roots.empty()){
+	//			auto root = roots.back();
+	//			roots.pop_back();	
 
-				for (auto it = neighbors.begin(); it != neighbors.end(); ++it){
-					auto offset = root + (*it);
+	//			for (auto it = neighbors.begin(); it != neighbors.end(); ++it){
+	//				auto offset = root + (*it);
 
-					if(in_image[offset] && flag_mat[offset] == 0){
-						roots.push_back(offset);
-						flag_mat[offset] = 1;
-						region.add(offset);
-					}
-				}
-			}
-			regions.push_back(region);
-		}
+	//				if(in_image[offset] && flag_mat[offset] == 0){
+	//					roots.push_back(offset);
+	//					flag_mat[offset] = 1;
+	//					region.add(offset);
+	//				}
+	//			}
+	//		}
+	//		regions.push_back(region);
+	//	}
 
-		skynet::set_boundary(flag_mat, 0);
-		return regions;        
-	}
+	//	skynet::set_boundary(flag_mat, 0);
+	//	return regions;        
+	//}
 
 
 	template <typename M1,typename M2>
