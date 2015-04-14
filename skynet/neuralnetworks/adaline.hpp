@@ -7,6 +7,7 @@
 #include <random>
 
 namespace skynet{namespace nn{
+	
 	using ml::database;
 
 	struct perceptron{};

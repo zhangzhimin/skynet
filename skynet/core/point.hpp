@@ -24,12 +24,6 @@ namespace skynet{
 
 		point()	{}
 
-		point(const value_type &value){
-			for (int i = 0; i < dim; ++i){
-				(*this)[i] = value;
-			}
-		}
-
 		point(const point &p) : _array(p._array) { }
 
 		point &operator=(const point &p){
@@ -76,7 +70,7 @@ namespace skynet{
 		typedef detail::index_iterator<const type>				const_iterator;
 
 
-		point( ) : x(0), y(0) { }
+		point( ) { }
 
 		explicit point(const value_type &value): x(value), y(value) {}
 
@@ -86,7 +80,7 @@ namespace skynet{
 
 		//for type lazy_cast
 		template <typename TT>
-		explicit point(const point<TT, 2> &p) : x(p.x), y(p.y) {}
+		explicit point(const point<TT, 2> &p) : x(static_cast<value_type>(p.x)), y(static_cast<value_type>(p.y)) {}
 
 		point(point &&p) : x(p.x), y(p.y){
 		}
@@ -142,7 +136,7 @@ namespace skynet{
 		typedef detail::index_iterator<type>					iterator;
 		typedef detail::index_iterator<const type>				const_iterator;
 
-		point() : x(0), y(0), z(0) { }
+		point() { }
 
 		explicit point(const value_type &value): x(value), y(value), z(value) {}
 
@@ -371,16 +365,6 @@ namespace skynet{
 		return stream <<")";
 	}
 
-	//template <typename T, size_t D>
-	//point<T, D> abs(const point<T, D> &p){
-	//	point <T, D> temp;
-	//	for (size_t i = 0; i < D; ++i){
-	//		temp[i] = std::abs(p[i]);
-	//	}
-
-	//	return temp;
-	//}
-
 	template <typename T, size_t D>
 	point<int, D> nearest_neighbor(const point<T, D> &p){
 		point<int, D> temp;
@@ -420,7 +404,7 @@ namespace skynet{
 			temp += p[i] * p[i];
 		}
 
-		return sqrt(temp);
+		return static_cast<T>(sqrt(temp));
 	}
 
 	
@@ -454,8 +438,6 @@ namespace skynet{
 		const typename std::enable_if<std::is_arithmetic<T>::value, T>::type &rhs){
 			return std::abs(lhs-rhs);
 	}
-
-
 
 	template <typename T, size_t D>
 	point<T, D> center_point(const point<T, D> &fir, const point<T, D> &sec){
@@ -507,6 +489,16 @@ namespace skynet{
 		temp[2] = p1[0] * p2[1] - p1[1] * p2[0];
 
 		return temp;
+	}
+
+	template <typename T, size_t dim>
+	inline T sqr(point<T, dim> x) { 
+		T re = 0;
+		for (size_t i = 0; i < dim; ++i) {
+			re += x[dim] * x[dim];
+		}
+		
+		return re;
 	}
 
 

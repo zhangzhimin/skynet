@@ -200,6 +200,30 @@ namespace skynet{
 	};
 
 
+	template <typename T>
+	class gaussian_function {
+	public:
+		typedef T	value_type;
+		typedef typename conditional<is_class<T>::value, typename T::value_type, T>::type scale_type;
+		static_assert(is_floating_point<scale_type>::value, "scale type should be floating point");
+
+		gaussian_function(scale_type sigma, T mu) : _sigma(sigma), _mu(mu) {}
+
+		scale_type operator()(value_type x) const {
+			return exp(-sqr(x - _mu) / 2 * sqr(_sigma)) / (_sigma * sqrt(2 * PI));
+		}
+
+		//T mu() const { return _mu; }
+		//void mu£¨T mu) { _mu = mu; }
+
+		//T sigma() const		{ return _sigma; }
+		//void sigma(T sigma) { _sigma = _sigma; }
+
+	private:
+		T					_mu;
+		scale_type			_sigma;
+	};
+
 	//template <typename T = double>
 	//class fast_tanh_function{
 	//public:

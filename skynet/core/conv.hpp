@@ -17,8 +17,6 @@ Purpose    : Implement the mul-d conv
 #include <functional>
 #include <random>
 
-#pragma message("The lambda has bug, the type can't be used")
-
 namespace skynet{
 
 	namespace detail{

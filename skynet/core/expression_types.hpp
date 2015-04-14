@@ -47,7 +47,6 @@ namespace skynet{
 	public:
 		typedef E						expression_type;
 
-			
 		const expression_type &operator()() const{
 			return *static_cast<const expression_type *>(this);
 		}
@@ -57,7 +56,5 @@ namespace skynet{
 		}
 	};
 
-	class iterator_expression {
 
-	};
 }

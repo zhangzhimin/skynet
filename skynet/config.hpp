@@ -112,6 +112,7 @@ using std::conditional;
 using std::enable_if;
 using std::remove_const;
 using std::remove_reference;
+using std::is_class;
 using std::is_const;
 using std::is_same;
 using std::is_base_of;

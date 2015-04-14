@@ -6,8 +6,6 @@
 #include <skynet/core/lazy_evaluation.hpp>
 #include <skynet/utility/tag.hpp>
 
-#pragma message("Warning:  when you use the morphology operation, \
-                the infomation of the boundary is invalid.(by zzm)")
 
 namespace skynet{ namespace cv{
 	using std::function;

@@ -202,18 +202,18 @@ namespace skynet{
 
 
 	template <typename size_t dim_>
-	class cubic_neighbor;
+	class cube_neighbor;
 
 	template <>
-	class cubic_neighbor<3>: public neighbor_adaptor<cubic_neighbor<3>,3>{
+	class cube_neighbor<3>: public neighbor_adaptor<cube_neighbor<3>,3>{
 	public:
-		cubic_neighbor &operator=(const cubic_neighbor &rhs){
+		cube_neighbor &operator=(const cube_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
 		}
 
-		cubic_neighbor(const int radius = 1): _radius(radius){}
+		cube_neighbor(const int radius = 1): _radius(radius){}
 
 		void attach(const extent_type &extent){
 			_extent = extent;
@@ -242,15 +242,15 @@ namespace skynet{
 	};
 
 	template <>
-	class cubic_neighbor<2>: public neighbor_adaptor<cubic_neighbor<2>, 2>{
+	class cube_neighbor<2>: public neighbor_adaptor<cube_neighbor<2>, 2>{
 	public:
-		cubic_neighbor &operator=(const cubic_neighbor &rhs){
+		cube_neighbor &operator=(const cube_neighbor &rhs){
 			_extent = rhs._extent;
 			_offsets = rhs._offsets;
 			return *this;
 		}
 
-		cubic_neighbor(const int radius = 1): _radius(radius){
+		cube_neighbor(const int radius = 1): _radius(radius){
 			// attach(extent);
 		}
 
@@ -266,11 +266,11 @@ namespace skynet{
 			}
 		}
 
-		const int operator[](const size_t &index) const{
+		const_reference operator[](const size_t &index) const{
 			return _offsets[index];
 		}
 
-		size_t size()const                        { return _offsets.size(); }
+		size_t size() const								{ return _offsets.size(); }
 
 	private:
 		extent_type	_extent;
@@ -278,6 +278,31 @@ namespace skynet{
 		int _radius;
 	};
 
+	template <size_t dim, typename Func>
+	class custom_neighbor: public neighbor_adaptor<custom_neighbor<dim, Func>, dim>{
+	public:
+		custom_neighbor(Func fun): _fun(fun) {}
+
+		void attach(extent_type extent) {
+			_fun(extent, std::ref(_offsets));
+		}
+
+		const_reference operator[](size_t i)  const {
+			return _offsets[i];
+		}
+
+		size_t size() const { return _offsets.size(); }
+
+	public:
+		extent_type _extent;
+		std::vector<value_type> _offsets;
+		Func _fun;
+	};
+
+	template <size_t dim, typename Func>
+	auto customize_neighbor(Func fun) {
+		return custom_neighbor<dim, Func>(fun);
+	}
 
 	template <typename N, typename Func>
 	void traverse_neighbors(const size_t &base, const N &neighbors, Func fun){

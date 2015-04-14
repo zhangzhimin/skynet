@@ -11,10 +11,6 @@ Purpose    :
 #include <skynet/utility/math.hpp>
 
 
-#pragma message("the region grow is 4-n and 6-n.")
-#pragma message("Warning: the std::vector reserve should be optimized.")
-#pragma message("the dilate_grow maybe has the performance problem.")
-
 namespace skynet{namespace cv{
 
 	template <typename M1, typename M2>

@@ -100,22 +100,18 @@ namespace skynet {
 	struct set_boundary_imp<2U>{
 		template <typename M>
 		static void do_it(M &mat, const typename M::value_type &value, const size_t thickness = 1){
-			auto size = mat.extent();
+			auto extent = mat.extent();
 
-			#ifdef DEBUG
-						for (int i = 0; i < typename M::extent_type::dim; ++i){
-							ASSERT(size[i] >= thickness, "the thickness is more than size");
-						}
-			#endif
+			for (size_t t = 0; t < thickness; ++t) {
+				for (size_t col = 0; col < extent[0]; ++col) {
+					mat(index2(col, t)) = value;
+					mat(index2(col, extent[1] - 1-t)) = value;
+				}
 
-			for (int col = 0; col < size.x; ++ col){
-				mat(index2(col, 0)) = value;
-				mat(index2(col, size.y - 1)) = value;
-			}
-
-			for (int row = 0; row < size.y; ++row){
-				mat(index2(0,row)) =value;
-				mat(index2(size.x - 1, row))= value;
+				for (size_t row = 0; row < extent[1]; ++row) {
+					mat(index2(t, row)) = value;
+					mat(index2(extent[0] - 1 - t, row)) = value;
+				}
 			}
 		}
 	};

@@ -1,8 +1,11 @@
 #pragma once
 
+#include <skynet/core/expression_types.hpp>
 #include <skynet/utility/iterator_facade.hpp>
+#include <skynet/core/point.hpp>
 
 namespace skynet {
+
 	template <typename Base>
 	class iterator_adaptor {
 	public:
@@ -19,6 +22,21 @@ namespace skynet {
 		const_iterator end() const { return const_iterator(const_cast<base_type *>(&((*this)())), (*this)().size()); }
 	};
 
+	//template <typename Base, typename T, size_t dim, bool hasSubscript>
+	//class multi_array_adaptor: public iterator_adaptor<Base>, public matrix_expression<Base>{
+	//public:
+	//	typedef Base									base_type;
+	//	typedef T										value_type;
+	//	typedef value_type &							reference;
+	//	typedef const value_type &						const_reference;
+	//
+	//	typedef point<ptrdiff_t, dim>					index_type;
+	//	typedef point<size_t, dim>						extent_type;
 
+	//	size_t size() const {
+	//		return return std::accumulate((*this)().extent().begin(), (*this)().extent().end(), 1, std::multiplies<size_t>());
+	//	}
 
+	//	typename std::enable_if<hasSubscript
+	//};
 }

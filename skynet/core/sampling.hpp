@@ -13,13 +13,10 @@ namespace skynet {
 			static const size_t							dim = M::dim;
 			typedef M									array_container;
 			typedef typename M::value_type				value_type;
-			typedef typename M::reference               reference;
-			typedef typename M::const_reference 		const_reference;
+			typedef value_type					        reference;
+			typedef value_type							const_reference;
 			typedef typename M::index_type				index_type;
 			typedef typename M::extent_type				extent_type;
-
-	/*		typedef detail::index_iterator<const type>			const_iterator;
-			typedef detail::index_iterator<type>				iterator;*/
 
 			array_down(const M &mat) : _mat(mat) { }
 
@@ -32,9 +29,6 @@ namespace skynet {
 				auto index_down = index << 1;
 				return _mat(index_down);
 			}
-
-			//const_iterator begin() 	const { return const_iterator(const_cast<type *>(this), 0); }
-			//const_iterator end() const { return const_iterator(const_cast<type *>(this), size()); }
 
 			extent_type extent() const {
 				return _mat.extent() >> 1;

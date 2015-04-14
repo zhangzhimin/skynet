@@ -28,6 +28,18 @@ namespace skynet{
 		std::copy(mat1.begin(), mat1.end(), mat2.begin());
 	}
 
+	template <typename M>
+	inline std::vector<size_t> find(const M &mat, typename M::value_type v) {
+		std::vector<size_t> re;
+		for (size_t i = 0; i < mat.size(); ++i) {
+			if (mat[i] == v) {
+				re.push_back(i);
+			}
+		}
+
+		return re;
+	}
+
 	namespace detail{
 		template <typename C, typename Func>
 		inline typename C::iterator order_push_front(C &list, const typename C::value_type &value, Func fun){
@@ -71,7 +83,6 @@ namespace skynet{
 	inline auto min_element(C &c, Func fun)->decltype(c.begin()) {
 		return std::min_element(c.begin(), c.end(), fun);
 	}
-
 
 	template <typename A, typename Fun>
 	inline void for_each_index2(const array_expression<A> &range, Fun fun){

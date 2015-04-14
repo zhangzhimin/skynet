@@ -9,12 +9,6 @@ Purpose    :
 #include <skynet/core/conv.hpp>
 #include <skynet/core/lazy_evaluation.hpp>
 
-#include <array>
-
-#pragma message("The the gradient operator just support the volume.")
-#pragma message("Because of the std::function, the lazy_array has the peformance problem, \
-Please refactor in The forture.")
-
 namespace skynet{ namespace cv{ namespace field{
 	namespace detail{
 		template <typename size_t dim_>

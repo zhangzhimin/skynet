@@ -29,12 +29,13 @@ namespace skynet{namespace io{
 		os.write((char *)(mat.buffer().get()), mat.size() * sizeof(T));
 	}
 
-	//template <typename M>
-	//void writemtx(const M &mat, const string &file) {
-	//	multi_array<typename M::value_type, M::dim> raw_data(mat.extent());
-	//	copy(mat, raw_data);
-	//	writemtx(raw_data, file);
-	//}
+	template <typename M>
+	void writemtx(const array_expression<M> &me, const string &file) {
+		auto mat = me();
+		multi_array<typename M::value_type, M::dim> raw_data(mat.extent());
+		copy(mat, raw_data);
+		writemtx(raw_data, file);
+	}
 
 	template <typename T, size_t D>
 	void readmtx(multi_array<T, D> &mat, const string &file){

@@ -1,63 +1,53 @@
-/*=============================================================================
-The MIT License (MIT)
-
-Copyright @ 2013 by Zhang Zhimin 
-p3.1415@qq.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-=============================================================================*/
-
 #pragma once
 
-#include <skynet/core/array.hpp>
-#include <skynet/utility/algorithm.hpp>
+#include <skynet/core/adaptor_types.hpp>
 
-namespace skynet{
+namespace skynet {
 
 
-	template <typename M>
-	multi_array<typename M::value_type, 2> bilinear_interpolate(const M &mat, const extent2 &new_size){
-		static_assert(M::dim == 2, "The image should be 2D.");
-		typedef typename M::value_type					value_type;
 
-		multi_array<typename M::value_type, 2> mat_re(new_size);
-		auto resolution = static_cast<point2d>(mat.extent()) / static_cast<point2d>(new_size);
-		resolution -= point2d(numeric_limits<double>::epsilon()); // prevent out range
+	template <typename ArrayType>
+	class interpolate_array {
+	public:
+		static_assert(ArrayType::dim == 2, "not support 3d array, needs completation");
 
-		for_each_index2(mat_re, [&](const index2 &index){
-			point2d pos = resolution * static_cast<point2d>(index);
-			index2 top_left  = static_cast<index2>(pos);
-			index2 top_right = top_left;
-			top_right.x += 1;
-			index2 bottom_right = top_left + index2::unit;
-			index2 bottom_left = top_left;
-			bottom_left.y += 1;
+		typedef typename ArrayType::value_type			value_type;
+		static const size_t dim = ArrayType::dim;
+		//typedef value_type 								reference;
+		//typedef value_type 								const_reference;
 
-			point2d shift = pos - static_cast<point2d>(top_left);
+		typedef point<ptrdiff_t, dim>					index_type;
+		typedef point<size_t, dim>						extent_type;
 
-			auto x_top= (1.0-shift.x)*mat.get_value(top_left) + shift.x*mat.get_value(top_right);
-			auto x_bottom = (1.0-shift.x)*mat.get_value(bottom_left) + shift.x*mat.get_value(bottom_right);
-			auto cur_value = (1.0-shift.y)*x_top + shift.y*x_bottom;
-			mat_re.set_value(index, value_type(cur_value));
-		});
+		interpolate_array(ArrayType data) : _data(data) {}
 
-		return mat_re;
+		template <typename T>
+		value_type operator()(point<T, dim> index)	const {
+			auto x = index[0];
+			auto y = index[1];
+			auto x0 = std::floor(x);
+			auto y0 = std::floor(y);
+			auto f00 = _data(x0, y0);
+			auto f01 = _data(x0, y0+1);
+			auto f10 = _data(x0 + 1, y0);
+			auto f11 = _data(x0 + 1, y0 + 1);
+
+			auto ff0 = f00 + (x - x0) * (f01 - f00);
+			auto ff1 = f10 + (x - x0) * (f11 - f10);
+
+			return ff0 + (y - y0) * (ff1 - ff0);
+		}
+
+		extent_type extent() const { return _data.extent(); }
+
+	private:
+		ArrayType			_data;
+	};
+
+
+	template <typename Array>
+	auto interpolate(Array data) {
+		return interpolate_array<Array>(data);
 	}
 
 
