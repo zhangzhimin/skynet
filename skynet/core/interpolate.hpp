@@ -4,8 +4,6 @@
 
 namespace skynet {
 
-
-
 	template <typename ArrayType>
 	class interpolate_array {
 	public:

@@ -83,7 +83,9 @@ namespace skynet {
 						}
 						sift_keypoint_type keypoint;
 						keypoint.position = pos;
-						keypoint.orientation = i;
+						//Todo  3-linear  interpolation.
+						//keypoint.orientation = i * 2 *PI / 36;
+						keypoint.orientation = om_tmp[pos].orientation;
 						keypoints.push_back(keypoint);
 					}
 				}
@@ -132,6 +134,8 @@ namespace skynet {
 						if (id[1] > 2)		--id[1];
 
 						point2d index_tran = rotatation_tran(index);
+						if (!bound_check(index_tran+point2d::unit, extent)) continue;
+
 						auto current_gradient = continuity_gradient(index_tran);
 						auto current_om = detail::gradient2om(current_gradient);
 						//orientation based on keypoint main orientation
@@ -140,8 +144,8 @@ namespace skynet {
 
 						auto o = current_om.orientation * 8 / (2 * PI);
 						o = o < 0 ? o + 2 * PI : o;
-						int up_o = std::round(o);
-						int down_o = up_o - 1;
+						auto up_o = std::round(o);
+						auto down_o = up_o - 1;
 		
 						auto w_o = (o - down_o - 0.5);
 						point2d up_id(std::round(id[0]), std::round(id[1]));
@@ -157,10 +161,10 @@ namespace skynet {
 						for (int k = 0; k < 2; ++k) {
 							for (int m = 0; m < 2; ++m) {
 								for (int n = 0; n < 2; ++n) {
-									if (std::isless(X0[k], 0) || std::isgreater(X0[k], 3) || std::isless(X1[m], 0) || std::isgreater(X1[m], 3)){
+									if (std::isless(X0[k], 0) || std::isgreater(X0[k], 3) || std::isless(X1[m], 0) || std::isgreater(X1[m], 3)) {
 										continue;
-									}							
-	
+									}
+
 									array<double, 3> W;
 									W[0] = k == 0 ? 1 - w_id[0] : w_id[0];
 									W[1] = m == 0 ? 1 - w_id[1] : w_id[1];
