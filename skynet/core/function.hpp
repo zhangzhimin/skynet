@@ -213,11 +213,6 @@ namespace skynet{
 			return exp(-sqr(x - _mu) / 2 * sqr(_sigma)) / (_sigma * sqrt(2 * PI));
 		}
 
-		//T mu() const { return _mu; }
-		//void mu£¨T mu) { _mu = mu; }
-
-		//T sigma() const		{ return _sigma; }
-		//void sigma(T sigma) { _sigma = _sigma; }
 
 	private:
 		T					_mu;

@@ -78,20 +78,19 @@ namespace skynet{ namespace cv{ namespace field{
 		return conv(mat, laplace_mask<M::dim>(radius));
 	}
 
-	template <typename M>
-	auto gradient_vector_flow(const M &mat, double mu, size_t  iterations) {
-		typedef decltype(gradient(mat))			GradientType;
+	template <typename GradientType>
+	auto gradient_vector_flow(GradientType gradient_field, double mu, size_t  iterations) {
 		typedef GradientType::value_type		vector_type;
 		typedef vector_type::value_type			value_type;
 		static const size_t dim = GradientType::dim;
 
-		multi_array<vector_type, dim> gradient_field(mat.extent());
-		copy(gradient(mat), gradient_field);
-		multi_array<value_type, dim> gradient_magnitude_square(mat.extent());
+		//auto gradient_field = *gradient;
+		auto extent = gradient_field.extent();
+		multi_array<value_type, dim> gradient_magnitude_square(extent);
 		transform(gradient_field, gradient_magnitude_square, [](auto v) { return square_sum(v); });
 		
-		multi_array<vector_type, dim> gradient_flow(mat.extent());
-		multi_array<vector_type, dim> new_gradient_flow(mat.extent());
+		multi_array<vector_type, dim> gradient_flow(extent);
+		multi_array<vector_type, dim> new_gradient_flow(extent);
 		copy(gradient_field, gradient_flow);
 
 		auto delta_t = 0.2 / mu;

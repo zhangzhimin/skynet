@@ -134,7 +134,7 @@ namespace skynet {
 						if (id[1] > 2)		--id[1];
 
 						point2d index_tran = rotatation_tran(index);
-						if (!bound_check(index_tran+point2d::unit, extent)) continue;
+						if (!bound_check(index_tran+point2d::unit, extent) || !bound_check(index_tran, extent)) continue;
 
 						auto current_gradient = continuity_gradient(index_tran);
 						auto current_om = detail::gradient2om(current_gradient);
@@ -194,4 +194,6 @@ namespace skynet {
 
 			return descriptors;
 		}
+
+		
 }}
