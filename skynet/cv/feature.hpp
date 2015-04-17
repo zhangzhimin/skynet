@@ -8,7 +8,7 @@ namespace skynet {
 	namespace cv {
 
 		template <typename M, typename ValueType>
-		auto harris_score(const M &mat, ValueType kappa) {
+		inline auto harris_score(const M &mat, ValueType kappa) {
 			auto trace = apply(mat, [](auto v) { return v[0][0] + v[1][1]; });
 			auto determinant = apply(mat, [](auto v) { return v[0][0] * v[1][1] - v[0][1] * v[1][0]; });
 			return determinant - kappa * (trace * trace);
@@ -38,13 +38,13 @@ namespace skynet {
 
 			//0-2PI
 			template <typename Gradient>
-			auto orientation_magnitude_gradient(const Gradient &gradient) {
+			inline auto orientation_magnitude_gradient(const Gradient &gradient) {
 				return apply(gradient, gradient2om);
 			}
 		}
 
 		template <typename Gradient, typename LocalizedPoints, typename Neighbor>
-		auto get_sift_keypoints(const Gradient &gradient, LocalizedPoints points, Neighbor neighbor) {
+		inline auto get_sift_keypoints(const Gradient &gradient, LocalizedPoints points, Neighbor neighbor) {
 			typedef sift_keypoint		sift_keypoint_type;
 
 			neighbor.attach(gradient.extent());
@@ -100,12 +100,12 @@ namespace skynet {
 		};
 
 		template <typename Gradient>
-		auto describe_sift(const Gradient &gradient, std::vector<sift_keypoint> keypoints) {
-			std::vector<std::array<double, 128>> descriptors;
+		inline auto describe_sift(const Gradient &gradient, std::vector<sift_keypoint> keypoints) {
+			std::vector<point<double, 128>> descriptors;
 			auto extent = gradient.extent();
 			for (auto keypoint : keypoints) {
 				multi_array<point<double, 8>, 2> hists(4, 4);
-				for (auto &hist: hists){
+				for (auto &hist : hists) {
 					std::fill(hist.begin(), hist.end(), 0);
 				}
 				auto theta = keypoint.orientation;
@@ -134,24 +134,24 @@ namespace skynet {
 						if (id[1] > 2)		--id[1];
 
 						point2d index_tran = rotatation_tran(index);
-						if (!bound_check(index_tran+point2d::unit, extent) || !bound_check(index_tran, extent)) continue;
+						if (!bound_check(index_tran + point2d::unit, extent) || !bound_check(index_tran, extent)) continue;
 
 						auto current_gradient = continuity_gradient(index_tran);
 						auto current_om = detail::gradient2om(current_gradient);
 						//orientation based on keypoint main orientation
 						current_om.orientation -= keypoint.orientation;
-						current_om.orientation = current_om.orientation < 0 ? current_om.orientation + 2*PI : current_om.orientation;
+						current_om.orientation = current_om.orientation < 0 ? current_om.orientation + 2 * PI : current_om.orientation;
 
 						auto o = current_om.orientation * 8 / (2 * PI);
 						o = o < 0 ? o + 2 * PI : o;
 						auto up_o = std::round(o);
 						auto down_o = up_o - 1;
-		
+
 						auto w_o = (o - down_o - 0.5);
 						point2d up_id(std::round(id[0]), std::round(id[1]));
 						point2d down_id = up_id - point2d::unit;
 						auto w_id = (id - down_id - point2d(0.5, 0.5));
-						
+
 						array<double, 2> X0 = { down_id[0], up_id[0] };
 						array<double, 2> X1 = { down_id[1], up_id[1] };
 						array<double, 2> X2 = { down_o, up_o };
@@ -175,12 +175,12 @@ namespace skynet {
 								}
 							}
 						}
-						
+
 
 					}
 				}
-				
-				array<double, 128> descriptor;
+
+				point<double, 128> descriptor;
 				auto it = descriptor.begin();
 				for (auto hist : hists) {
 					for (auto e : hist) {
@@ -195,5 +195,5 @@ namespace skynet {
 			return descriptors;
 		}
 
-		
-}}
+	}
+}

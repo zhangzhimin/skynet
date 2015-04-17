@@ -24,8 +24,8 @@ namespace skynet{
 		static const size_t									        dim = dim_;
 		typedef typename functor_type_traits::result_type			value_type;
 		typedef typename functor_type_traits::argument_type         argument_type;
-		typedef point<int, dim>										extent_type;
-		typedef point<int, dim>										index_type;
+		typedef point<size_t, dim>										extent_type;
+		typedef point<ptrdiff_t, dim>										index_type;
 		typedef detail::index_iterator<type>                                iterator;
 		typedef detail::index_iterator<const type>                          const_iterator;
 		typedef value_type                                          reference;
@@ -70,19 +70,19 @@ namespace skynet{
 	};
 
 	template <typename size_t dim, typename Func>
-	auto make_lazy_array(const point<int, dim> &extent, Func fun)->const lazy_array<dim, Func>{
+	inline auto make_lazy_array(const point<size_t, dim> &extent, Func fun)->const lazy_array<dim, Func>{
 		return lazy_array<dim, Func>(extent, fun);
 	}
 
 	template <typename M, typename Func>
-	auto apply(const M &mat, Func func) {
+	inline auto apply(const M &mat, Func func) {
 		return make_lazy_array(mat.extent(), [=](size_t i) {
 			return func(mat[i]);
 		});
 	}
 
 	template <typename M1, typename M2, typename Func>
-	auto apply(const M1 &lhs, const M2 &rhs, Func func) {
+	inline auto apply(const M1 &lhs, const M2 &rhs, Func func) {
 		ASSERT_SAME_EXTENT(lhs, rhs);
 		return make_lazy_array(lhs.extent(), [=](const size_t &i) {
 			return func(lhs[i], rhs[i]);
@@ -90,7 +90,7 @@ namespace skynet{
 	}
 
 	template <typename M1, typename M2>
-	auto operator+(const array_expression<M1> &mat_exp1, const array_expression<M2> &mat_exp2){
+	inline auto operator+(const array_expression<M1> &mat_exp1, const array_expression<M2> &mat_exp2){
 		auto mat1 = mat_exp1();
 		auto mat2 = mat_exp2();
 		return make_lazy_array(mat1.extent(), [mat1, mat2](const size_t &i) {
@@ -99,7 +99,7 @@ namespace skynet{
 	}
 
 	template <typename M1, typename M2>
-	auto operator-(const array_expression<M1> &mat_exp1, const array_expression<M2> &mat_exp2){
+	inline auto operator-(const array_expression<M1> &mat_exp1, const array_expression<M2> &mat_exp2){
 		auto mat1 = mat_exp1();
 		auto mat2 = mat_exp2();
 		return make_lazy_array(mat1.extent(), [mat1, mat2](const size_t &i) {
@@ -108,7 +108,7 @@ namespace skynet{
 	}
 
 	template <typename m1, typename m2>
-	auto operator*(const array_expression<m1> &mat_exp1, const array_expression<m2> &mat_exp2)
+	inline auto operator*(const array_expression<m1> &mat_exp1, const array_expression<m2> &mat_exp2)
 	{
 		auto mat1 = mat_exp1();
 		auto mat2 = mat_exp2();
@@ -118,7 +118,7 @@ namespace skynet{
 	}
 
 	template <typename M>
-	auto operator*(float scale, const array_expression<M> &mat_exp){
+	inline auto operator*(float scale, const array_expression<M> &mat_exp){
 		auto mat = mat_exp();
 		return make_lazy_array(mat.extent(), [=](const size_t &i) {
 			return scale * mat[i];
@@ -135,7 +135,7 @@ namespace skynet{
 	}
 
 	template <typename ValueType, typename ArrayType>
-	auto cast(const ArrayType &mat) {
+	inline auto cast(const ArrayType &mat) {
 		return apply(mat, detail::type_cast<typename ArrayType::value_type, ValueType>());
 	}
 

@@ -42,6 +42,15 @@ namespace skynet{ namespace cv{
 		});
     }
 
+	template <typename Array, typename Mask>
+	auto filter(Array data, Mask mask) {
+		mask.attach(data.extent());
+		auto temp = conv(data, mask);
+		return make_lazy_array(data.extent(), [=](size_t offset)->typename Array::value_type {
+			return temp[offset] / mask.weight_sum();
+		});
+	}
+
 	template <typename M>
 	auto gaussian_down_sampling(const M &mat) {
 		return down_sampling(gaussian_filter(mat));

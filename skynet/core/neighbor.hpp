@@ -10,7 +10,7 @@ namespace skynet{
 	class neighbor_adaptor : public iterator_adaptor<B> {
 	public:
 		typedef B										neighbor_type;
-		typedef point<ptrdiff_t, dim>                   extent_type;
+		typedef point<size_t, dim>                   	extent_type;
 		typedef ptrdiff_t								value_type;
 		typedef const value_type &                      reference;
 		typedef const value_type &                      const_reference;

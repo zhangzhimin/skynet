@@ -25,8 +25,8 @@ namespace skynet{
 		typedef typename B::const_reference     const_reference;
 		typedef typename B::iterator			iterator;
 		typedef typename B::const_iterator		const_iterator;
-		typedef point<ptrdiff_t, dim>					index_type;
-		typedef point<ptrdiff_t, dim>					extent_type;
+		typedef point<ptrdiff_t, dim>				index_type;
+		typedef point<size_t, dim>					extent_type;
 
 		multi_array() : _buffer(), _extent() {}
 
@@ -218,8 +218,8 @@ namespace skynet{
 		typedef T &                                     reference;
 		typedef const T &                               const_reference;
 
-		typedef point<int, 3>                  index_type;
-		typedef point<int, 3>                  extent_type;
+		typedef point<ptrdiff_t, 3>                 	 index_type;
+		typedef point<size_t, 3>                  		extent_type;
 
 		hash_array(const T &value) : _default_value(value) {}
 

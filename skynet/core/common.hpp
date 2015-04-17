@@ -32,12 +32,12 @@ namespace skynet {
 		return temp;
 	}
 
-	template <typename extent_type>
-	extent_type size_t2index(const size_t &pos, const extent_type &size){
-		extent_type index;
+	template <size_t dim>
+	point<ptrdiff_t, dim> size_t2index(size_t pos, point<size_t, dim> size){
+		point<ptrdiff_t, dim> index;
 
 		auto temp = pos;
-		for (int i = 0; i < extent_type::dim; ++i){
+		for (int i = 0; i < dim; ++i){
 			size_t k = temp / size[i];
 			index[i] = temp - k * size[i];
 			temp = k;
@@ -46,8 +46,8 @@ namespace skynet {
 		return index;
 	}
 
-	template <typename index_type, typename extent_type>
-	size_t index2size_t(const index_type &index, const extent_type &extent){
+	template <size_t dim>
+	size_t index2size_t(point<ptrdiff_t, dim> index,  point<size_t, dim> extent){
 		IS_SAME_DIMENTION(index_type, extent_type);
 
 		size_t pos = 0;

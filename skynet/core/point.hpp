@@ -503,11 +503,11 @@ namespace skynet{
 
 
 	///-----------------typdef the size type and index type
-	typedef point<int, 2> extent2;
-	typedef point<int, 3> extent3;
+	typedef point<size_t, 2> extent2;
+	typedef point<size_t, 3> extent3;
 
-	typedef point<int, 2> index2;
-	typedef point<int, 3> index3;	
+	typedef point<ptrdiff_t, 2> index2;
+	typedef point<ptrdiff_t, 3> index3;	
 
 	typedef point<float, 3> point3f;
 	typedef point<float, 2> point2f;

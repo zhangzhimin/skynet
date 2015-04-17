@@ -13,7 +13,6 @@ Purpose    :
 
 namespace skynet {
 
-
 	namespace detail {
 		template <typename T>
 		struct mask_element {
@@ -38,7 +37,7 @@ namespace skynet {
 	public:
 		typedef B                                       mask_type;
 		static const size_t                             dim = dim_;
-		typedef point<ptrdiff_t, dim>                   extent_type;
+		typedef point<size_t, dim>						extent_type;
 		typedef Weight									weight_type;
 		typedef mask_element<Weight>					value_type;
 		typedef const value_type &                      reference;
@@ -63,7 +62,7 @@ namespace skynet {
 
 
 	template <typename size_t dim_>
-	class mean_mask {
+	class mean_mask : public mask_adaptor<mean_mask<dim_>, dim_> {
 	public:
 		typedef mean_mask                               type;
 		static const size_t                             dim = dim_;
@@ -74,11 +73,13 @@ namespace skynet {
 		typedef detail::index_iterator<type>                    iterator;
 		typedef detail::index_iterator<const type>              const_iterator;
 
-		mean_mask() {}
+		mean_mask(size_t radius): _radius(radius) {}
 
-		void attach(const extent_type &extent) {
+		void attach(extent_type extent) {
 			_extent = extent;
-			diamand_neighbor<dim> neighbors(_extent);
+			cube_neighbor<dim> neighbors(_radius);
+			neighbors.attach(extent);
+			_elements.resize(neighbors.size());
 
 			for (size_t i = 0; i < neighbors.size(); ++i) {
 				_elements[i].weight = 1;
@@ -86,9 +87,13 @@ namespace skynet {
 			}
 		}
 
+		const_reference operator[](const size_t &i) const { return _elements[i]; }
+		size_t size() const { return _elements.size(); }
+
 	private:
-		extent_type                                     _extent;
-		std::array<value_type, dim * 2>                   _elements;
+		extent_type											_extent;
+		std::vector<value_type>								_elements;
+		size_t												_radius;
 	};
 
 
