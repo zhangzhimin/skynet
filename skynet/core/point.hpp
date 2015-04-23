@@ -50,6 +50,7 @@ namespace skynet{
 		std::array<T, dim> _array;
 	};
 
+	//±àÒëÎÊÌâ
 	template <typename T, size_t dim>
 	const point<T, dim> point<T,dim>::zero = point<T, dim>(0);
 

@@ -78,27 +78,35 @@ namespace skynet{ namespace cv{ namespace field{
 		return conv(mat, laplace_mask<M::dim>(radius));
 	}
 
+	//\brief 梯度向量流计算
+	//\param gradient_field 原始梯度场
+	//\param mu gvf的权重系数
+	//\param iterations 迭代次数
 	template <typename GradientType>
 	auto gradient_vector_flow(GradientType gradient_field, double mu, size_t  iterations) {
 		typedef GradientType::value_type		vector_type;
 		typedef vector_type::value_type			value_type;
 		static const size_t dim = GradientType::dim;
 
-		//auto gradient_field = *gradient;
+		//数据尺寸
 		auto extent = gradient_field.extent();
+		//计算原始梯度场平方和
 		multi_array<value_type, dim> gradient_magnitude_square(extent);
 		transform(gradient_field, gradient_magnitude_square, [](auto v) { return square_sum(v); });
 		
+		//定义梯度向量流场
 		multi_array<vector_type, dim> gradient_flow(extent);
+		//定义下一次更新的梯度向量流场
 		multi_array<vector_type, dim> new_gradient_flow(extent);
+		//初始化梯度向量流场
 		copy(gradient_field, gradient_flow);
-
-		auto delta_t = 0.2 / mu;
 
 		for (int i = 0; i < iterations; ++i) {
 			auto term1 = gradient_magnitude_square * (gradient_field - gradient_flow);
 			auto term2 = mu * laplace(gradient_flow);
+			//因为是延时计算，先把计算结果拷贝到用于存储结果的新梯度向量流场里面
 			copy(gradient_flow +  term1 + term2, new_gradient_flow);
+			//将数据拷贝回去
 			copy(new_gradient_flow, gradient_flow);
 		}
 		

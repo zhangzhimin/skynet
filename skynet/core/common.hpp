@@ -48,11 +48,9 @@ namespace skynet {
 
 	template <size_t dim>
 	size_t index2size_t(point<ptrdiff_t, dim> index,  point<size_t, dim> extent){
-		IS_SAME_DIMENTION(index_type, extent_type);
-
 		size_t pos = 0;
 		size_t slide = 1;
-		for (int i = 0; i < extent_type::dim; ++i){
+		for (int i = 0; i < dim; ++i){
 			pos += slide * index[i];
 			slide *= extent[i];
 		}

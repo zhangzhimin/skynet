@@ -46,9 +46,11 @@ namespace skynet{ namespace cv{
 	auto filter(Array data, Mask mask) {
 		mask.attach(data.extent());
 		auto temp = conv(data, mask);
-		return make_lazy_array(data.extent(), [=](size_t offset)->typename Array::value_type {
+		auto masksum = mask.weight_sum();
+		return apply(temp, [masksum](auto x)->typename Array::value_type { return x / masksum; });
+	/*	return make_lazy_array(data.extent(), [=](size_t offset)->typename Array::value_type {
 			return temp[offset] / mask.weight_sum();
-		});
+		});*/
 	}
 
 	template <typename M>
