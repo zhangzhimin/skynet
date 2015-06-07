@@ -31,7 +31,7 @@ namespace skynet{
 
 			value_type operator()(size_t i) const{
 				if (i >= (_mat.size() - _mask.max_offset()) || i < -_mask.min_offset()){
-					return value_type(0);
+					return _mat[i];
 				}
 
 				value_type temp(0);

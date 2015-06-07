@@ -1,7 +1,7 @@
 /*=============================================================================
 The MIT License (MIT)
 
-Copyright @ 2013 by Zhang Zhimin 
+Copyright @ 2013 by Zhang Zhimin
 p3.1415@qq.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <skynet/core/conv.hpp>
 #include <skynet/core/sampling.hpp>
 
+
 namespace skynet{ namespace cv{
     using std::function;
 
@@ -36,7 +37,7 @@ namespace skynet{ namespace cv{
 		gaussian_mask<M::dim> mask;
 		mask.attach(mat_src.extent());
         auto temp = conv(mat_src, mask);
-        
+
         return make_lazy_array(mat_src.extent(), [=](const size_t &i)->typename M::value_type {
 			return temp[i] / mask.weight_sum();
 		});
@@ -48,9 +49,6 @@ namespace skynet{ namespace cv{
 		auto temp = conv(data, mask);
 		auto masksum = mask.weight_sum();
 		return apply(temp, [masksum](auto x)->typename Array::value_type { return x / masksum; });
-	/*	return make_lazy_array(data.extent(), [=](size_t offset)->typename Array::value_type {
-			return temp[offset] / mask.weight_sum();
-		});*/
 	}
 
 	template <typename M>

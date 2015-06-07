@@ -520,7 +520,7 @@ namespace skynet{
 	typedef point<int, 2> point2i;
 
 	inline size_t get_volume_size(extent3 extent){
-		return static_cast<size_t>(std::accumulate(extent.begin(), extent.end(), int(1), std::multiplies<int>()));
+		return static_cast<size_t>(std::accumulate(extent.begin(), extent.end(), size_t(1), std::multiplies<size_t>()));
 	}
 
 	template <typename T, size_t D>

@@ -60,7 +60,7 @@ namespace skynet{
 		extent_type extent() const				{ return _extent; }
 
 		size_t	size() const{
-			return std::accumulate(_extent.begin(), _extent.end(), 1, std::multiplies<int>());
+			return std::accumulate(_extent.begin(), _extent.end(), size_t(1), std::multiplies<size_t>());
 		}
 
 	private:

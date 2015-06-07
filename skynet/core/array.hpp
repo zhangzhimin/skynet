@@ -10,6 +10,8 @@ Purpose    : Implements the std::array
 #include <skynet/core/shared_buffer.hpp>
 #include <skynet/core/common.hpp>
 #include <skynet/core/algorithm.hpp>
+#include <skynet/core/type_traits.hpp>
+#include <skynet/core/iterator.hpp>
 
 #include <unordered_map>
 
@@ -18,13 +20,13 @@ namespace skynet{
 	template <typename T, size_t D, typename B = shared_buffer<T>>
 	class multi_array: public array_expression<multi_array<T, D, B>>{
 	public:
-		typedef T								value_type; 
-		static	const size_t					dim = D;
-		typedef B								buffer_type;
-		typedef typename B::reference			reference;
-		typedef typename B::const_reference     const_reference;
-		typedef typename B::iterator			iterator;
-		typedef typename B::const_iterator		const_iterator;
+		typedef T												value_type; 
+		static	const size_t									dim = D;
+		typedef B												buffer_type;
+		typedef typename reference_of_buffer<B>::type			reference;
+		typedef typename const_reference_of_buffer<B>::type     const_reference;
+		typedef typename iterator_of_buffer<B>::type			iterator;
+		typedef typename const_iterator_of_buffer<B>::type		const_iterator;
 		typedef point<ptrdiff_t, dim>				index_type;
 		typedef point<size_t, dim>					extent_type;
 
@@ -44,8 +46,8 @@ namespace skynet{
 
 		multi_array(extent_type extent, const buffer_type &buffer)
 			: _extent(extent), _buffer(buffer){
-				ASSERT(size(extent) == buffer.size(), "the size is not match");
-
+			///TODO: pointer buffer has not size method.
+				//ASSERT(size(extent) == buffer.size(), "the size is not match");
 		}
 
 		multi_array &operator=(const multi_array &rhs){
@@ -101,13 +103,14 @@ namespace skynet{
 		const_reference operator[](const size_t &i) const              { return _buffer[i]; }
 		reference operator[](const size_t &i)                          { return _buffer[i]; }
 
-		iterator begin()								{ return _buffer.begin(); }
-		iterator end()									{ return _buffer.end(); }
-		const_iterator begin() const					{ return _buffer.begin(); }
-		const_iterator end() const						{ return _buffer.end(); }
+		iterator begin()								{ return skynet::begin(_buffer); }
+		const_iterator begin() const					{ return skynet::begin(_buffer); }
+
+		iterator end()									{ return skynet::end(_buffer, size()); }
+		const_iterator end() const						{ return skynet::end(_buffer, size()); }
 
 		extent_type extent() const						{ return _extent; }
-		size_t		size() const						{ return _buffer.size(); }
+		size_t		size() const						{ return whole_size(_extent); }
 
 		void swap(multi_array &rhs){
 			std::swap(_buffer, rhs._buffer);
@@ -115,13 +118,37 @@ namespace skynet{
 			std::swap(_slide, rhs._slide);
 		}
 
-		buffer_type	buffer() const						{ return _buffer; }
+		const buffer_type	buffer() const							{ return _buffer; }
+		buffer_type buffer()										{ return _buffer; };
 
 	protected:
 		buffer_type			_buffer;
 		extent_type			_extent;
 		extent_type			_slide;
 	};
+
+
+	//template <typename T, size_t D>
+	//class raw_array: public array_expression<raw_array<T, D>>{
+	//public:
+	//	typedef raw_array						self_type;
+	//	typedef T								value_type;
+	//	static	const size_t					dim = D;
+	//	typedef typename value_type &			reference;
+	//	typedef typename const value_type &     const_reference;
+
+	//	typedef typename detail::index_iterator<self_type>			iterator;
+	//	typedef typename detail::index_iterator<const self_type>	const_iterator;
+
+	//	typedef typename B::const_iterator		const_iterator;
+	//	typedef point<ptrdiff_t, dim>				index_type;
+	//	typedef point<size_t, dim>					extent_type;
+
+	//private:
+	//	T*					_p_raw;
+	//	extent_type			_extent;
+	//	extent_type			_slide;
+	//};
 
 
 	template <typename M, byte bit_mask_>
@@ -277,7 +304,7 @@ namespace skynet{
 	template <typename M>
 	auto clone(const M &mat)->multi_array<typename M::value_type, M::dim>{
 		multi_array<typename M::value_type, M::dim> temp_mat(mat.extent());
-		deep_copy(mat, temp_mat);
+		copy(mat, temp_mat);
 		return temp_mat;
 	}
 
@@ -298,9 +325,12 @@ namespace skynet{
 	typedef multi_array<byte, 3>						array3b;
 	typedef multi_array<float, 3>						array3f;
 	typedef multi_array<int, 3>							array3i;
+	typedef multi_array<short, 3>						array3s;
 	typedef multi_array<double, 3>						array3d;
+
 	typedef multi_array<byte, 2>						array2b;
 	typedef multi_array<float, 2>						array2f;
 	typedef multi_array<int, 2>							array2i;
+	typedef multi_array<short, 2>						array2s;
 	typedef multi_array<double, 2>						array2d;
 }
